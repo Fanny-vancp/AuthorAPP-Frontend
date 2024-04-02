@@ -12,6 +12,7 @@ class AllCharacters extends StatelessWidget {
         title: const Text('Characters of the universe **'),
       ),
       drawer: const MenuDrawer(),
+      
     );
   }
 }
