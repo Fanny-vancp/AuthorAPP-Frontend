@@ -1,8 +1,10 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../screens/home_page.dart';
 import '../screens/characters.dart';
+
 
 final GoRouter router = GoRouter(
   routes: <RouteBase>[
@@ -21,4 +23,4 @@ final GoRouter router = GoRouter(
       ],
     ),
   ],
-);
+);*/
