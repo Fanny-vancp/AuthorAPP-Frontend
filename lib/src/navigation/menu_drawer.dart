@@ -6,6 +6,7 @@ class MenuDrawer extends StatelessWidget {
   /*final Function(String) onMenuItemSelected;
 
   const MenuDrawer({required this.onMenuItemSelected});*/
+  const MenuDrawer({super.key});
 
   
 
@@ -21,7 +22,7 @@ class MenuDrawer extends StatelessWidget {
 
   List<Widget> buildMenuItems(BuildContext context){
     final List<String> menuTitles = [
-      'Home',
+      'Accueil',
       'Personnage',
       'Arbre généalogique',
       'Royaume'
@@ -43,14 +44,14 @@ class MenuDrawer extends StatelessWidget {
         onTap: () {
           // Handle navigation based on title
           switch(title) {
-            case 'Acceuil':
+            case 'Accueil':
               //('/');
-              routerDelegate.handleRouteChange(RouteConfig.home);
+              routerDelegate.handleRouteChange(RouteConfig.home());
               Navigator.pop(context); 
               break;
-            case 'Personnages':
+            case 'Personnage':
               //(':idUniverse/characters');
-              routerDelegate.handleRouteChange(RouteConfig.characters);
+              routerDelegate.handleRouteChange(RouteConfig.characters());
               Navigator.pop(context);
               break;
             // Handle other menu items similarly

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../navigation/menu_drawer.dart';
 
 class HomePage extends StatelessWidget {
-  final VoidCallback onShowNextPage; 
+  /*final VoidCallback onShowNextPage; 
 
-  const HomePage({Key? key, required this.onShowNextPage}) : super(key: key);
+  const HomePage({Key? key, required this.onShowNextPage}) : super(key: key);*/
+
+  const HomePage ({super.key});
   
 
   @override
@@ -14,7 +16,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Home : Choose your universe'),
       ),
-      drawer: MenuDrawer(),
+      drawer: const MenuDrawer(),
     );
   }
 }

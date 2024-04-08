@@ -11,7 +11,7 @@ class AllCharacters extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Characters : Characters of the universe **'),
       ),
-      drawer: MenuDrawer(),
+      drawer: const MenuDrawer(),
     );
   }
 }
