@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/src/screens/characters.dart';
 import 'package:frontend/src/screens/home_page.dart';
-import 'package:frontend/src/screens/universes.dart';
+import 'package:frontend/src/screens/universe_home_page.dart';
 import 'package:frontend/src/screens/unknown_screen.dart';
 import 'route_config.dart';
 

@@ -9,10 +9,12 @@ class MyUniverse extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Universe : Welcome to universe **'),
+        title: const Text('Bienvenu dans *:universe_name*'),
       ),
       drawer: const MenuDrawer(),
-      
+      body: const Center(
+        
+      ),
     );
   }
 }
