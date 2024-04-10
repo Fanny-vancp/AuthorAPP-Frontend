@@ -3,6 +3,8 @@ import 'package:frontend/src/screens/characters.dart';
 import 'package:frontend/src/screens/home_page.dart';
 import 'package:frontend/src/screens/universe_home_page.dart';
 import 'package:frontend/src/screens/unknown_screen.dart';
+import 'package:frontend/src/screens/characters_details.dart';
+//import '../model/character.dart';
 import 'route_config.dart';
 
 class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier, 
@@ -41,23 +43,15 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
           ),
           if (_configuration.uri == RouteConfig.universe().uri) 
             const MaterialPage(child: MyUniverse()),
-          if (_configuration.uri == RouteConfig.characters().uri) 
+          if ( _configuration.uri == RouteConfig.characters().uri)
             const MaterialPage(child: AllCharacters()),
+          if ( _configuration.uri == RouteConfig.characterDetails(_configuration.idCharacter).uri)
+            MaterialPage(child: CharacterDetails(characterId: _configuration.idCharacter!,)),
+            //if (_configuration.idCharacter != null) MaterialPage(child: CharacterDetails(characterId: _configuration.idCharacter!,)) 
+            //else const MaterialPage(child: AllCharacters()),
           if (_configuration.uri == RouteConfig.unknown().uri) 
             const MaterialPage(child: UnknowScreen()),
         ],
-        /*
-        pages: [
-          MaterialPage(
-            child: HomePage(
-              onShowNextPage: () => handleRouteChange(RouteConfig.universe()),
-            ),
-          ),
-          if (_configuration == RouteConfig.universe()) 
-            const MaterialPage(child: MyUniverse()),
-          if (_configuration == RouteConfig.characters()) 
-            const MaterialPage(child: AllCharacters()),
-        ],*/
       );
     }
 
@@ -65,4 +59,11 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
     Future<void> setNewRoutePath(RouteConfig configuration) async {
       _configuration = configuration;
     }
+
+    void handleCharacterTapped(int characterId) {
+      _configuration = RouteConfig.characterDetails(characterId);
+      notifyListeners();
+    }
+
+    
 }

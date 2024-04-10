@@ -15,28 +15,39 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
       && uri.pathSegments[1] == RouteConfig.universe().uri.pathSegments[1]) 
       { return RouteConfig.universe(); }
     // -> '/home/:universeName/characters'
-    else if (uri.pathSegments.length == 3 && uri.pathSegments[0] == RouteConfig.characters().uri.pathSegments[0] 
+    else if (uri.pathSegments.length == 3 && uri.pathSegments[2] == RouteConfig.characters().uri.pathSegments[2] 
       && uri.pathSegments[1] == RouteConfig.characters().uri.pathSegments[1] && uri.pathSegments[2] == RouteConfig.characters().uri.pathSegments[2]) 
       { return RouteConfig.characters(); }
+    // -> '/home/:universeName/characters/:characterId'
+    else if (uri.pathSegments.length == 4 && uri.pathSegments[2] == RouteConfig.characters().uri.pathSegments[2] ) {
+      var remaining = uri.pathSegments[3];
+      var  characterId = int.tryParse(remaining);
+      if  (characterId == null) return RouteConfig.unknown();
+      return RouteConfig.characterDetails(characterId);
+    }
+    
     // Fallback à home si l'url ne correspond à aucune route connue
     return RouteConfig.unknown();
   }
 
   @override
-  RouteInformation restoreRouteInformation(RouteConfig path) {
-    if (path.isUnknowSection) {
-      return RouteInformation(location: RouteConfig.unknown().uri.path);
+  RouteInformation restoreRouteInformation(RouteConfig configuration) {
+    if (configuration.isUnknowSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.unknown().uri.path));
     }
-    if (path.isHomeSection) {
-      return RouteInformation(location: RouteConfig.home().uri.path);
+    if (configuration.isHomeSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.home().uri.path));
     }
-    if (path.isUniverseSection) {
-      return RouteInformation(location: RouteConfig.universe().uri.path);
+    if (configuration.isUniverseSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.universe().uri.path));
     }
-    if (path.isCharactersSection) {
-      return RouteInformation(location: RouteConfig.characters().uri.path);
+    if (configuration.isCharactersSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.characters().uri.path));
     }
-    return  RouteInformation(location: "");
+    if (configuration.isCharacterDetailsSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.characterDetails(configuration.idCharacter).uri.path));
+    }
+    return RouteInformation(uri: Uri.parse(""));
   }
 
 }

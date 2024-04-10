@@ -1,13 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:frontend/src/navigation2.0/route_delegate.dart';
 import 'package:http/http.dart' as http;
 
 import '../navigation/menu_drawer.dart';
 import '../model/character.dart';
 
 class AllCharacters extends StatefulWidget {
-  const AllCharacters({super.key});
+  //final VoidCallback onShowCharacterDetails;
+  //const AllCharacters({required this.onShowCharacterDetails, super.key});
+  const AllCharacters ({super.key});
 
   @override
   State<AllCharacters> createState() => _AllCharactersState();
@@ -43,6 +46,13 @@ class _AllCharactersState extends State<AllCharacters> {
                     child: ListTile(
                       title: Text(snapshot.data![index].name),
                       subtitle: Text(snapshot.data![index].description),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.arrow_forward),
+                        //onPressed: onShowCharacterDetails,
+                        onPressed: () {
+                          (Router.of(context).routerDelegate as MyRouteDelegate).handleCharacterTapped(snapshot.data![index].id);
+                        }
+                      ),
                     ),
                   );
                 },
