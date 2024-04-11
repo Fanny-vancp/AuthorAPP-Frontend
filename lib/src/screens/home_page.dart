@@ -25,6 +25,54 @@ class _HomePageState extends State<HomePage> {
     futureUniverses = fetchUniverses();
   }
 
+  // show form for created new universe
+  Future<void> _showCreateUniverseDialog() async {
+    TextEditingController titleController = TextEditingController();
+    TextEditingController genreController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Créer un nouvel univers'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Titre'),
+                ),
+                TextField(
+                  controller: genreController,
+                  decoration: const InputDecoration(labelText: 'Genre littéraire'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await createUniverse(titleController.text, genreController.text);
+                // Actualiser la page après la création de l'univers
+                setState(() {
+                  futureUniverses = fetchUniverses();
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Valider'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,10 +113,37 @@ class _HomePageState extends State<HomePage> {
             return  const CircularProgressIndicator();
           }
         )
-      )
+        
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateUniverseDialog,
+        tooltip: 'Nouveau univers',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
+
+Future<Universe> createUniverse(String title, String genre) async {
+  final response = await  http.post(
+    Uri.parse("https://localhost:7162/api/universes"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(<String, String>{
+      'title': title,
+      'literaryGenre': genre,
+    }),
+  );
+
+  if (response.statusCode == 201) {
+    return Universe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+  else {
+    throw Exception('Failed to create universe');
+  }
+}
+
 
 Future<List<Universe>> fetchUniverses() async {
   final response = await http.get(
