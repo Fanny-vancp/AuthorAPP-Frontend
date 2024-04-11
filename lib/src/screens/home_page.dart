@@ -25,6 +25,77 @@ class _HomePageState extends State<HomePage> {
     futureUniverses = fetchUniverses();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home : Choose your universe'),
+      ),
+      //drawer: const MenuDrawer(),
+      body: Center(
+        child: FutureBuilder<List<Universe>> (
+          future: futureUniverses,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) 
+            { 
+              return Wrap(
+                spacing: 30, // Espace horizontal entre les carrés
+                runSpacing: 25, // Espace vertical entre les lignes de carrés
+                children: snapshot.data!.map((universe) {
+                  return InkWell(
+                    onTap: () {
+                      (Router.of(context).routerDelegate as MyRouteDelegate)
+                          .handleUniverseTapped(universe.id);
+                    },
+                    child: Container(
+                      width: 200, // Largeur de chaque carré
+                      height: 200, // Hauteur de chaque carré
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 17, 119, 124).withOpacity(0.7), // Opacité ajustée
+                        borderRadius: BorderRadius.circular(20.0), // Bordures arrondies
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              universe.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              universe.literaryGenre,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            }
+            else if (snapshot.hasError) 
+            { return Text('${snapshot.error}'); }
+
+            // By default, show a loading spinner
+            return  const CircularProgressIndicator();
+          }
+        )
+        
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateUniverseDialog,
+        tooltip: 'Nouveau univers',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
   // show form for created new universe
   Future<void> _showCreateUniverseDialog() async {
     TextEditingController titleController = TextEditingController();
@@ -72,58 +143,9 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home : Choose your universe'),
-      ),
-      //drawer: const MenuDrawer(),
-      body: Center(
-        child: FutureBuilder<List<Universe>> (
-          future: futureUniverses,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) 
-            { 
-              //return Text(snapshot.data!.title); 
-              return ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(snapshot.data![index].title),
-                      subtitle: Text(snapshot.data![index].literaryGenre),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.arrow_forward),
-                        //onPressed: onShowCharacterDetails,
-                        onPressed: () {
-                          (Router.of(context).routerDelegate as MyRouteDelegate).handleUniverseTapped(snapshot.data![index].id);
-                        }
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
-            else if (snapshot.hasError) 
-            { return Text('${snapshot.error}'); }
-
-            // By default, show a loading spinner
-            return  const CircularProgressIndicator();
-          }
-        )
-        
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateUniverseDialog,
-        tooltip: 'Nouveau univers',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
 }
 
+// call to api post new universe
 Future<Universe> createUniverse(String title, String genre) async {
   final response = await  http.post(
     Uri.parse("https://localhost:7162/api/universes"),
@@ -144,7 +166,7 @@ Future<Universe> createUniverse(String title, String genre) async {
   }
 }
 
-
+// call to api get all Universes
 Future<List<Universe>> fetchUniverses() async {
   final response = await http.get(
     Uri.parse("https://localhost:7162/api/universes"),

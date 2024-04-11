@@ -38,7 +38,7 @@ class _CharacterDetailsState extends State<CharacterDetails> {
           builder: (context , snapshot) {
             if (snapshot.hasData) {
               characterId = snapshot.data!.idUniverse;
-              return Text(snapshot.data!.name);
+              return Text(snapshot.data!.pseudo);
             } else if (snapshot.hasError) { return Text('${snapshot.error}'); }
             return const Text('Loading...');
           },

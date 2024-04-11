@@ -1,6 +1,7 @@
 class Character {
   final int id;
   final int idUniverse;
+  final String pseudo;
   final String name;
   final String description;
   final String gender;
@@ -10,6 +11,7 @@ class Character {
   Character({
     required this.id,
     required this.idUniverse,
+    required this.pseudo,
     required this.name,
     required this.description,
     required this.gender,
@@ -21,7 +23,8 @@ class Character {
     return Character(
       id: json['id'] as int,
       idUniverse: json['idUniverse'] as int,
-      name: json['name'] as String,
+      pseudo: json['pseudo'] as String,
+      name: json['name'] != null ? json['name'] as String : '',
       description: json['description'] != null ? json['description'] as String : '',
       gender: json['gender'] != null ? json['gender'] as String : '',
       eyeColor: json['eyeColor'] != null ? json['eyeColor'] as String : '',

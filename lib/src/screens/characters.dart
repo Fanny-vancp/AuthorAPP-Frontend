@@ -54,8 +54,8 @@ class _AllCharactersState extends State<AllCharacters> {
                 itemBuilder: (context, index) {
                   return Card(
                     child: ListTile(
-                      title: Text(snapshot.data![index].name),
-                      subtitle: Text(snapshot.data![index].description),
+                      title: Text(snapshot.data![index].pseudo),
+                      subtitle: Text(snapshot.data![index].name),
                       trailing: IconButton(
                         icon: const Icon(Icons.arrow_forward),
                         //onPressed: onShowCharacterDetails,
@@ -75,11 +75,60 @@ class _AllCharactersState extends State<AllCharacters> {
             return  const CircularProgressIndicator();
           }
         )
-      )
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateUniverseDialog,
+        tooltip: 'Nouveau univers',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  // show form for created new character
+  Future<void> _showCreateUniverseDialog() async {
+    TextEditingController pseudoController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Créer un nouveau personnage'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: pseudoController,
+                  decoration: const InputDecoration(labelText: 'Pseudo:'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await createCharacter(widget.universeId, pseudoController.text);
+                // Actualiser la page après la création de l'univers
+                setState(() {
+                  futureCharacters = fetchCharacters(widget.universeId);
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Valider'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
+// call to api get all characters
 Future<List<Character>> fetchCharacters(int idUniverse) async {
   final response = await http.get(
     Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters"),
@@ -97,6 +146,7 @@ Future<List<Character>> fetchCharacters(int idUniverse) async {
   }
 }
 
+// call to api get universe
 Future<Universe> fetchUniverse(int idUniverse) async {
   final response = await http.get(
     Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}"),
@@ -110,5 +160,25 @@ Future<Universe> fetchUniverse(int idUniverse) async {
     return universe;
   } else {
     throw Exception('Failed to load universe.');
+  }
+}
+
+// call to api post character
+Future<Character> createCharacter(int idUniverse, String pseudo) async {
+  final response = await  http.post(
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters/"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(<String, String>{
+      'pseudo': pseudo,
+    }),
+  );
+
+  if (response.statusCode == 201) {
+    return Character.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+  else {
+    throw Exception('Failed to create character');
   }
 }
