@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../navigation/menu_drawer.dart';
+//import '../navigation/menu_drawer.dart';
+import '../navigation2.0/route_delegate.dart';
 import '../model/universe.dart';
 
 class HomePage extends StatefulWidget {
@@ -30,7 +31,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Home : Choose your universe'),
       ),
-      drawer: const MenuDrawer(),
+      //drawer: const MenuDrawer(),
       body: Center(
         child: FutureBuilder<List<Universe>> (
           future: futureUniverses,
@@ -44,8 +45,14 @@ class _HomePageState extends State<HomePage> {
                   return Card(
                     child: ListTile(
                       title: Text(snapshot.data![index].title),
-                      subtitle: Text(snapshot.data![index].description),
-                      // Vous pouvez ajouter d'autres informations de l'univers ici
+                      subtitle: Text(snapshot.data![index].literaryGenre),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.arrow_forward),
+                        //onPressed: onShowCharacterDetails,
+                        onPressed: () {
+                          (Router.of(context).routerDelegate as MyRouteDelegate).handleUniverseTapped(snapshot.data![index].id);
+                        }
+                      ),
                     ),
                   );
                 },
@@ -62,10 +69,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-/*
-Future<http.Response> fetchUniverses(){
-  return  http.get(Uri.parse("https://localhost:7162/api/universes"));
-}*/
 
 Future<List<Universe>> fetchUniverses() async {
   final response = await http.get(
@@ -79,7 +82,6 @@ Future<List<Universe>> fetchUniverses() async {
     Iterable jsonResponse = jsonDecode(response.body);
     List<Universe> universesList = jsonResponse.map((model) => Universe.fromJson(model)).toList();
     return universesList;
-    //return Universe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   } else {
     throw Exception('Failed to load universe.');
   }

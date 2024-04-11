@@ -10,14 +10,10 @@ import 'route_config.dart';
 class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier, 
   PopNavigatorRouterDelegateMixin<RouteConfig> {
     RouteConfig _configuration = RouteConfig.home(); // -> .home = '/'
-    //RouteConfig _previousConfiguration;
-
-    //List<String> universesFromDB = ['Keleana','Acotar'];
 
     @override
     RouteConfig? get currentConfiguration => _configuration;
 
-    
     void handleRouteChange(RouteConfig newConfig){
       _configuration = newConfig;
       notifyListeners(); // notify the router of the update
@@ -41,14 +37,13 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
           const MaterialPage(
             child: HomePage(),
           ),
-          if (_configuration.uri == RouteConfig.universe().uri) 
-            const MaterialPage(child: MyUniverse()),
-          if ( _configuration.uri == RouteConfig.characters().uri)
-            const MaterialPage(child: AllCharacters()),
-          if ( _configuration.uri == RouteConfig.characterDetails(_configuration.idCharacter).uri)
+          if (_configuration.uri == RouteConfig.universe(_configuration.idUniverse).uri) 
+            MaterialPage(child: MyUniverse(universeId: _configuration.idUniverse!)),
+          if ( _configuration.uri == RouteConfig.characters(_configuration.idUniverse).uri)
+            MaterialPage(child: AllCharacters(universeId: _configuration.idUniverse!)),
+          if ( _configuration.uri == RouteConfig.characterDetails(_configuration.idUniverse, 
+          _configuration.idCharacter).uri)
             MaterialPage(child: CharacterDetails(characterId: _configuration.idCharacter!,)),
-            //if (_configuration.idCharacter != null) MaterialPage(child: CharacterDetails(characterId: _configuration.idCharacter!,)) 
-            //else const MaterialPage(child: AllCharacters()),
           if (_configuration.uri == RouteConfig.unknown().uri) 
             const MaterialPage(child: UnknowScreen()),
         ],
@@ -60,10 +55,15 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
       _configuration = configuration;
     }
 
-    void handleCharacterTapped(int characterId) {
-      _configuration = RouteConfig.characterDetails(characterId);
+    void handleCharacterTapped(int universeId, int characterId) {
+      _configuration = RouteConfig.characterDetails(universeId, characterId);
       notifyListeners();
     }
 
-    
+    void handleUniverseTapped(int universeId) {
+      _configuration = RouteConfig.universe(universeId);
+      notifyListeners();
+    }
+
+
 }

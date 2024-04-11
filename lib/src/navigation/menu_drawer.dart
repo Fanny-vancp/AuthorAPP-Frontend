@@ -3,13 +3,10 @@ import 'package:frontend/src/navigation2.0/route_config.dart';
 import  '../navigation2.0/route_delegate.dart';
 
 class MenuDrawer extends StatelessWidget {
-  /*final Function(String) onMenuItemSelected;
+  final int universeId;
 
-  const MenuDrawer({required this.onMenuItemSelected});*/
-  const MenuDrawer({super.key});
-
+  const MenuDrawer({required this.universeId, super.key});
   
-
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +42,12 @@ class MenuDrawer extends StatelessWidget {
           // Handle navigation based on title
           switch(title) {
             case 'Accueil':
-              //('/');
+              //('/home');
               routerDelegate.handleRouteChange(RouteConfig.home());
-              Navigator.pop(context); 
               break;
             case 'Personnage':
-              //(':idUniverse/characters');
-              routerDelegate.handleRouteChange(RouteConfig.characters());
-              Navigator.pop(context);
+              //('/home/:idUniverse/characters');
+              routerDelegate.handleRouteChange(RouteConfig.characters(universeId));
               break;
             // Handle other menu items similarly
           }

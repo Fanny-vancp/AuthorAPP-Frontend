@@ -8,22 +8,32 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
     final Uri uri = routeInformation.uri;
       //  -> '/home' && '/'
     if (uri.pathSegments.isEmpty || 
-      (uri.pathSegments.length == 1 && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0]))
-      { return RouteConfig.home(); }
-    //  -> '/home/:universeName'
-    else if (uri.pathSegments.length == 2 && uri.pathSegments[0] == RouteConfig.universe().uri.pathSegments[0]
-      && uri.pathSegments[1] == RouteConfig.universe().uri.pathSegments[1]) 
-      { return RouteConfig.universe(); }
-    // -> '/home/:universeName/characters'
-    else if (uri.pathSegments.length == 3 && uri.pathSegments[2] == RouteConfig.characters().uri.pathSegments[2] 
-      && uri.pathSegments[1] == RouteConfig.characters().uri.pathSegments[1] && uri.pathSegments[2] == RouteConfig.characters().uri.pathSegments[2]) 
-      { return RouteConfig.characters(); }
-    // -> '/home/:universeName/characters/:characterId'
-    else if (uri.pathSegments.length == 4 && uri.pathSegments[2] == RouteConfig.characters().uri.pathSegments[2] ) {
-      var remaining = uri.pathSegments[3];
-      var  characterId = int.tryParse(remaining);
+      (uri.pathSegments.length == 1 
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0]))
+    { return RouteConfig.home(); }
+    //  -> '/home/:universeId'
+    else if (uri.pathSegments.length == 2 
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0]) 
+    { 
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      return RouteConfig.universe(universeId); 
+    }
+    // -> '/home/:universeId/characters'
+    else if (uri.pathSegments.length == 3 
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
+        && uri.pathSegments[2] == 'characters' ) 
+    { 
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      return RouteConfig.characters(universeId); 
+    }
+    // -> '/home/:universeId/characters/:characterId'
+    else if (uri.pathSegments.length == 4 
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
+        && uri.pathSegments[2] == 'characters' ) {
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      var  characterId = int.tryParse(uri.pathSegments[3]);
       if  (characterId == null) return RouteConfig.unknown();
-      return RouteConfig.characterDetails(characterId);
+      return RouteConfig.characterDetails(universeId, characterId);
     }
     
     // Fallback à home si l'url ne correspond à aucune route connue
@@ -39,13 +49,13 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
       return RouteInformation(uri: Uri.parse(RouteConfig.home().uri.path));
     }
     if (configuration.isUniverseSection) {
-      return RouteInformation(uri: Uri.parse(RouteConfig.universe().uri.path));
+      return RouteInformation(uri: Uri.parse(RouteConfig.universe(configuration.idUniverse).uri.path));
     }
     if (configuration.isCharactersSection) {
-      return RouteInformation(uri: Uri.parse(RouteConfig.characters().uri.path));
+      return RouteInformation(uri: Uri.parse(RouteConfig.characters(configuration.idUniverse).uri.path));
     }
     if (configuration.isCharacterDetailsSection) {
-      return RouteInformation(uri: Uri.parse(RouteConfig.characterDetails(configuration.idCharacter).uri.path));
+      return RouteInformation(uri: Uri.parse(RouteConfig.characterDetails(configuration.idUniverse, configuration.idCharacter).uri.path));
     }
     return RouteInformation(uri: Uri.parse(""));
   }

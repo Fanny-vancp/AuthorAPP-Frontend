@@ -6,11 +6,11 @@ import 'package:http/http.dart' as http;
 
 import '../navigation/menu_drawer.dart';
 import '../model/character.dart';
+import '../model/universe.dart';
 
 class AllCharacters extends StatefulWidget {
-  //final VoidCallback onShowCharacterDetails;
-  //const AllCharacters({required this.onShowCharacterDetails, super.key});
-  const AllCharacters ({super.key});
+  final int universeId;
+  const AllCharacters ({required this.universeId, super.key});
 
   @override
   State<AllCharacters> createState() => _AllCharactersState();
@@ -18,20 +18,30 @@ class AllCharacters extends StatefulWidget {
 
 class _AllCharactersState extends State<AllCharacters> {
   late Future<List<Character>> futureCharacters;
+  late Future<Universe> futureUniverse;
 
   @override
   void initState() {
     super.initState();
-    futureCharacters = fetchCharacters();
+    futureCharacters = fetchCharacters(widget.universeId);
+    futureUniverse = fetchUniverse(widget.universeId);
   } 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Characters : Characters of the universe **'),
+        title: FutureBuilder<Universe>(
+          future: futureUniverse,
+          builder: (context , snapshot) {
+            if (snapshot.hasData) {
+              return Text('${snapshot.data!.title} : Personnage');
+            } else if (snapshot.hasError) { return Text('${snapshot.error}'); }
+            return const Text('Loading...');
+          }, 
+        ),
       ),
-      drawer: const MenuDrawer(),
+      drawer: MenuDrawer(universeId: widget.universeId,),
       body: Center(
         child: FutureBuilder<List<Character>> (
           future: futureCharacters,
@@ -50,7 +60,7 @@ class _AllCharactersState extends State<AllCharacters> {
                         icon: const Icon(Icons.arrow_forward),
                         //onPressed: onShowCharacterDetails,
                         onPressed: () {
-                          (Router.of(context).routerDelegate as MyRouteDelegate).handleCharacterTapped(snapshot.data![index].id);
+                          (Router.of(context).routerDelegate as MyRouteDelegate).handleCharacterTapped( widget.universeId, snapshot.data![index].id);
                         }
                       ),
                     ),
@@ -70,9 +80,9 @@ class _AllCharactersState extends State<AllCharacters> {
   }
 }
 
-Future<List<Character>> fetchCharacters() async {
+Future<List<Character>> fetchCharacters(int idUniverse) async {
   final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/1/characters"),
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters"),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -82,6 +92,22 @@ Future<List<Character>> fetchCharacters() async {
     Iterable jsonResponse = jsonDecode(response.body);
     List<Character> charactersList = jsonResponse.map((model) => Character.fromJson(model)).toList();
     return charactersList;
+  } else {
+    throw Exception('Failed to load universe.');
+  }
+}
+
+Future<Universe> fetchUniverse(int idUniverse) async {
+  final response = await http.get(
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}"),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if(response.statusCode == 200) {
+    Universe universe = Universe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    return universe;
   } else {
     throw Exception('Failed to load universe.');
   }

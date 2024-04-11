@@ -21,6 +21,7 @@ class CharacterDetails extends StatefulWidget {
 
 class _CharacterDetailsState extends State<CharacterDetails> {
   late Future<Character> futureCharacter;
+  late int characterId;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _CharacterDetailsState extends State<CharacterDetails> {
           future: futureCharacter,
           builder: (context , snapshot) {
             if (snapshot.hasData) {
+              characterId = snapshot.data!.idUniverse;
               return Text(snapshot.data!.name);
             } else if (snapshot.hasError) { return Text('${snapshot.error}'); }
             return const Text('Loading...');
@@ -44,7 +46,7 @@ class _CharacterDetailsState extends State<CharacterDetails> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            (Router.of(context).routerDelegate as MyRouteDelegate).handleRouteChange(RouteConfig.characters());
+            (Router.of(context).routerDelegate as MyRouteDelegate).handleRouteChange(RouteConfig.characters(characterId));
           },
         ),
       ),
