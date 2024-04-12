@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home : Choose your universe'),
+        title: const Text('Choisis ton univers'),
       ),
       //drawer: const MenuDrawer(),
       body: Center(

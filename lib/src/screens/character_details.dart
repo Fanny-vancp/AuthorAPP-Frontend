@@ -70,8 +70,7 @@ class _CharacterDetailsState extends State<CharacterDetails> {
 class CharacterCard extends StatelessWidget {
   final Character character;
 
-  const CharacterCard({required this.character, super.key,
-});
+  const CharacterCard({required this.character, super.key,});
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +113,7 @@ class CharacterCard extends StatelessWidget {
 }
 
 
-// call the api
+// call the api get character
 Future<Character> fetchCharacter(int characterId) async {
   final response = await http.get(
     Uri.parse("https://localhost:7162/api/universes/1/characters/${characterId.toString()}"),

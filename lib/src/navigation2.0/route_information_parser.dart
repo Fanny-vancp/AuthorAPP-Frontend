@@ -35,7 +35,24 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
       if  (characterId == null) return RouteConfig.unknown();
       return RouteConfig.characterDetails(universeId, characterId);
     }
-    
+    // -> '/home/:idUniverse/places'
+    else if (uri.pathSegments.length == 3 
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
+        && uri.pathSegments[2] == 'places' ) 
+    { 
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      return RouteConfig.places(universeId); 
+    }
+    // -> '/home/:universeId/places/:placeId'
+    else if (uri.pathSegments.length == 4 
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
+        && uri.pathSegments[2] == 'places' ) {
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      var  placeId = int.tryParse(uri.pathSegments[3]);
+      if  (placeId == null) return RouteConfig.unknown();
+      return RouteConfig.placeDetails(universeId, placeId);
+    }
+
     // Fallback à home si l'url ne correspond à aucune route connue
     return RouteConfig.unknown();
   }
@@ -56,6 +73,12 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
     }
     if (configuration.isCharacterDetailsSection) {
       return RouteInformation(uri: Uri.parse(RouteConfig.characterDetails(configuration.idUniverse, configuration.idCharacter).uri.path));
+    }
+    if (configuration.isCharactersSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.places(configuration.idUniverse).uri.path));
+    }
+    if (configuration.isCharacterDetailsSection) {
+      return RouteInformation(uri: Uri.parse(RouteConfig.placeDetails(configuration.idUniverse, configuration.idPlace).uri.path));
     }
     return RouteInformation(uri: Uri.parse(""));
   }

@@ -5,25 +5,25 @@ import 'package:frontend/src/navigation2.0/route_delegate.dart';
 import 'package:http/http.dart' as http;
 
 import '../navigation/menu_drawer.dart';
-import '../model/character.dart';
+import '../model/place.dart';
 import '../model/universe.dart';
 
-class AllCharacters extends StatefulWidget {
+class AllPlaces extends StatefulWidget {
   final int universeId;
-  const AllCharacters ({required this.universeId, super.key});
+  const AllPlaces ({required this.universeId, super.key});
 
   @override
-  State<AllCharacters> createState() => _AllCharactersState();
+  State<AllPlaces> createState() => _AllPlacesState();
 }
 
-class _AllCharactersState extends State<AllCharacters> {
-  late Future<List<Character>> futureCharacters;
+class _AllPlacesState extends State<AllPlaces> {
+  late Future<List<Place>> futurePlaces;
   late Future<Universe> futureUniverse;
 
   @override
   void initState() {
     super.initState();
-    futureCharacters = fetchCharacters(widget.universeId);
+    futurePlaces = fetchPlaces(widget.universeId);
     futureUniverse = fetchUniverse(widget.universeId);
   } 
 
@@ -35,7 +35,7 @@ class _AllCharactersState extends State<AllCharacters> {
           future: futureUniverse,
           builder: (context , snapshot) {
             if (snapshot.hasData) {
-              return Text('${snapshot.data!.title} : Personnage');
+              return Text('${snapshot.data!.title} : Lieu');
             } else if (snapshot.hasError) { return Text('${snapshot.error}'); }
             return const Text('Loading...');
           }, 
@@ -43,8 +43,8 @@ class _AllCharactersState extends State<AllCharacters> {
       ),
       drawer: MenuDrawer(universeId: widget.universeId,),
       body: Center(
-        child: FutureBuilder<List<Character>> (
-          future: futureCharacters,
+        child: FutureBuilder<List<Place>> (
+          future: futurePlaces,
           builder: (context, snapshot) {
             if (snapshot.hasData) 
             { 
@@ -54,13 +54,13 @@ class _AllCharactersState extends State<AllCharacters> {
                 itemBuilder: (context, index) {
                   return Card(
                     child: ListTile(
-                      title: Text(snapshot.data![index].pseudo),
-                      subtitle: Text(snapshot.data![index].name),
+                      title: Text(snapshot.data![index].name),
+                      subtitle: Text('Races associés ${snapshot.data![index].associatedRaces}'),
                       trailing: IconButton(
                         icon: const Icon(Icons.arrow_forward),
                         //onPressed: onShowCharacterDetails,
                         onPressed: () {
-                          (Router.of(context).routerDelegate as MyRouteDelegate).handleCharacterTapped( widget.universeId, snapshot.data![index].id);
+                          (Router.of(context).routerDelegate as MyRouteDelegate).handlePlaceTapped( widget.universeId, snapshot.data![index].id);
                         }
                       ),
                     ),
@@ -77,28 +77,28 @@ class _AllCharactersState extends State<AllCharacters> {
         )
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateCharacterDialog,
-        tooltip: 'Nouveau personnage',
+        onPressed: _showCreatePlaceDialog,
+        tooltip: 'Nouveau lieu',
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  // show form for created new character
-  Future<void> _showCreateCharacterDialog() async {
-    TextEditingController pseudoController = TextEditingController();
+  // show form for created new place
+  Future<void> _showCreatePlaceDialog() async {
+    TextEditingController nameController = TextEditingController();
 
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Créer un nouveau personnage'),
+          title: const Text('Créer un nouveau lieu'),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
-                  controller: pseudoController,
-                  decoration: const InputDecoration(labelText: 'Pseudo:'),
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nom:'),
                 ),
               ],
             ),
@@ -112,10 +112,10 @@ class _AllCharactersState extends State<AllCharacters> {
             ),
             TextButton(
               onPressed: () async {
-                await createCharacter(widget.universeId, pseudoController.text);
+                await createPlace(widget.universeId, nameController.text);
                 // Actualiser la page après la création de l'univers
                 setState(() {
-                  futureCharacters = fetchCharacters(widget.universeId);
+                  futurePlaces = fetchPlaces(widget.universeId);
                 });
                 Navigator.of(context).pop();
               },
@@ -128,10 +128,10 @@ class _AllCharactersState extends State<AllCharacters> {
   }
 }
 
-// call to api get all characters
-Future<List<Character>> fetchCharacters(int idUniverse) async {
+// call to api get all places
+Future<List<Place>> fetchPlaces(int idUniverse) async {
   final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters"),
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/places"),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -139,8 +139,8 @@ Future<List<Character>> fetchCharacters(int idUniverse) async {
 
   if(response.statusCode == 200) {
     Iterable jsonResponse = jsonDecode(response.body);
-    List<Character> charactersList = jsonResponse.map((model) => Character.fromJson(model)).toList();
-    return charactersList;
+    List<Place> placesList = jsonResponse.map((model) => Place.fromJson(model)).toList();
+    return placesList;
   } else {
     throw Exception('Failed to load universe.');
   }
@@ -163,20 +163,20 @@ Future<Universe> fetchUniverse(int idUniverse) async {
   }
 }
 
-// call to api post character
-Future<Character> createCharacter(int idUniverse, String pseudo) async {
+// call to api post place
+Future<Place> createPlace(int idUniverse, String name) async {
   final response = await  http.post(
-    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters/"),
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/places/"),
     headers: <String, String>{
       "Content-Type": "application/json",
     },
     body: jsonEncode(<String, String>{
-      'pseudo': pseudo,
+      'name': name,
     }),
   );
 
   if (response.statusCode == 201) {
-    return Character.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    return Place.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
   else {
     throw Exception('Failed to create character');

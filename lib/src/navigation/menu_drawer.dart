@@ -20,9 +20,14 @@ class MenuDrawer extends StatelessWidget {
   List<Widget> buildMenuItems(BuildContext context){
     final List<String> menuTitles = [
       'Accueil',
-      'Personnage',
+      'Personnages',
       'Arbre généalogique',
-      'Royaume'
+      'Lieux',
+      'Races',
+      'Mythologie & Religion',
+      'Lore',
+      'Groupes',
+      'Livres'
     ];
 
     final MyRouteDelegate routerDelegate = Router.of(context).routerDelegate as MyRouteDelegate;
@@ -45,11 +50,14 @@ class MenuDrawer extends StatelessWidget {
               //('/home');
               routerDelegate.handleRouteChange(RouteConfig.home());
               break;
-            case 'Personnage':
+            case 'Personnages':
               //('/home/:idUniverse/characters');
               routerDelegate.handleRouteChange(RouteConfig.characters(universeId));
               break;
-            // Handle other menu items similarly
+            case 'Lieux':
+              //('/home/:idUniverse/places');
+              routerDelegate.handleRouteChange(RouteConfig.places(universeId));
+              break;
           }
         },
       ));
