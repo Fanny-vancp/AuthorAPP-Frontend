@@ -55,7 +55,7 @@ class _AllPlacesState extends State<AllPlaces> {
                   return Card(
                     child: ListTile(
                       title: Text(snapshot.data![index].name),
-                      subtitle: Text('Races associés ${snapshot.data![index].associatedRaces}'),
+                      subtitle: Text('Races associés : ${snapshot.data![index].associatedRaces}'),
                       trailing: IconButton(
                         icon: const Icon(Icons.arrow_forward),
                         //onPressed: onShowCharacterDetails,

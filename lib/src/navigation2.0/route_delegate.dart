@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/src/screens/characters.dart';
+import 'package:frontend/src/screens/family_tree.dart';
 import 'package:frontend/src/screens/home_page.dart';
 import 'package:frontend/src/screens/place_details.dart';
 import 'package:frontend/src/screens/places.dart';
@@ -65,6 +66,8 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
             MaterialPage(child: AllPlaces(universeId: _configuration.idUniverse!)),
           if (_configuration.isPlaceDetailsSection)
             MaterialPage(child: PlaceDetails(placeId: _configuration.idPlace!,)),
+          if (_configuration.isFamilyTreeSection)
+            MaterialPage(child: MyFamiliesTree(universeId: _configuration.idUniverse!)),
           if (_configuration.isUnknowSection)
             const MaterialPage(child: UnknowScreen()),
         ],

@@ -54,6 +54,9 @@ class MenuDrawer extends StatelessWidget {
               //('/home/:idUniverse/characters');
               routerDelegate.handleRouteChange(RouteConfig.characters(universeId));
               break;
+            case 'Arbre généalogique':
+              //('/home/:idUniverse/family_tree');
+              routerDelegate.handleRouteChange(RouteConfig.familyTree(universeId));
             case 'Lieux':
               //('/home/:idUniverse/places');
               routerDelegate.handleRouteChange(RouteConfig.places(universeId));

@@ -40,6 +40,10 @@ class RouteConfig {
     : uri = Uri(path: "/home/${idUniverse.toString()}/places/${idPlace.toString()}"),
       idCharacter = null;
 
+  RouteConfig.familyTree(this.idUniverse)
+    : uri = Uri(path: "/home/${idUniverse.toString()}/family_tree"),
+      idCharacter = null,
+      idPlace = null;
 
   bool get isHomeSection => 
     (uri == RouteConfig.home().uri);
@@ -48,7 +52,8 @@ class RouteConfig {
   bool get isUniverseSection => 
     (idUniverse != null 
     && idCharacter == null 
-    && idPlace == null);
+    && idPlace == null 
+    && uri.path.endsWith(idUniverse.toString()));
   bool get isCharactersSection =>
     (idUniverse != null 
     && idCharacter == null 
@@ -64,6 +69,9 @@ class RouteConfig {
   bool get isPlaceDetailsSection => 
     (idPlace != null 
     && idCharacter == null);
+  bool get isFamilyTreeSection => (
+    idUniverse != null 
+    && uri.path.endsWith('/family_tree'));
 
 
   @override
@@ -71,6 +79,7 @@ class RouteConfig {
     return "RouteConfig{ uriPath : ${uri.path},idUniverse: ${idUniverse.toString()}, idCharacter : ${idCharacter.toString()} }";
   }
 
-  /*@override
-  List<Object> get props => [uri.path, idCharacter];*/
+  /*
+  @override
+  List<Object> get props => [uri.path, idUniverse!, idCharacter!, idPlace!];*/
 }

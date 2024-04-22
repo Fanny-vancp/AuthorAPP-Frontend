@@ -29,7 +29,8 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
     // -> '/home/:universeId/characters/:characterId'
     else if (uri.pathSegments.length == 4 
         && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
-        && uri.pathSegments[2] == 'characters' ) {
+        && uri.pathSegments[2] == 'characters' ) 
+    {
       var universeId = int.tryParse(uri.pathSegments[1]);
       var  characterId = int.tryParse(uri.pathSegments[3]);
       if  (characterId == null) return RouteConfig.unknown();
@@ -46,14 +47,22 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
     // -> '/home/:universeId/places/:placeId'
     else if (uri.pathSegments.length == 4 
         && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
-        && uri.pathSegments[2] == 'places' ) {
+        && uri.pathSegments[2] == 'places' ) 
+    {
       var universeId = int.tryParse(uri.pathSegments[1]);
       var  placeId = int.tryParse(uri.pathSegments[3]);
       if  (placeId == null) return RouteConfig.unknown();
       return RouteConfig.placeDetails(universeId, placeId);
     }
-
-    // Fallback à home si l'url ne correspond à aucune route connue
+    // -> '/home/:universeId/family_tree'
+    else if (uri.pathSegments.length == 3
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
+        && uri.pathSegments[2] == 'family_tree')
+    {
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      return RouteConfig.familyTree(universeId); 
+    }
+    // Fallback à home if url doesn't correspond to any route
     return RouteConfig.unknown();
   }
 
@@ -74,11 +83,14 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
     if (configuration.isCharacterDetailsSection) {
       return RouteInformation(uri: Uri.parse(RouteConfig.characterDetails(configuration.idUniverse, configuration.idCharacter).uri.path));
     }
-    if (configuration.isCharactersSection) {
+    if (configuration.isPlacesSection) {
       return RouteInformation(uri: Uri.parse(RouteConfig.places(configuration.idUniverse).uri.path));
     }
-    if (configuration.isCharacterDetailsSection) {
+    if (configuration.isPlaceDetailsSection) {
       return RouteInformation(uri: Uri.parse(RouteConfig.placeDetails(configuration.idUniverse, configuration.idPlace).uri.path));
+    }
+    if (configuration.isFamilyTreeSection) {
+      return RouteInformation(uri:Uri.parse(RouteConfig.familyTree(configuration.idUniverse).uri.path));
     }
     return RouteInformation(uri: Uri.parse(""));
   }
