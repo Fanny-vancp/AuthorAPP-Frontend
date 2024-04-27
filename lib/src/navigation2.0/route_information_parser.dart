@@ -62,6 +62,16 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
       var universeId = int.tryParse(uri.pathSegments[1]);
       return RouteConfig.familyTree(universeId); 
     }
+    // -> '/home/:universeId/family_tree/:family_treeName'
+    else if (uri.pathSegments.length == 4
+        && uri.pathSegments[0] == RouteConfig.home().uri.pathSegments[0] 
+        && uri.pathSegments[2] == 'family_tree')
+    {
+      var universeId = int.tryParse(uri.pathSegments[1]);
+      var familyTreeName = uri.pathSegments[3];
+      if  (familyTreeName == '') return RouteConfig.unknown();
+      return RouteConfig.familyTreeDetails(universeId, familyTreeName); 
+    }
     // Fallback à home if url doesn't correspond to any route
     return RouteConfig.unknown();
   }
@@ -91,6 +101,9 @@ class MyRouteInformationParser extends RouteInformationParser<RouteConfig> {
     }
     if (configuration.isFamilyTreeSection) {
       return RouteInformation(uri:Uri.parse(RouteConfig.familyTree(configuration.idUniverse).uri.path));
+    }
+    if (configuration.isFamilyTreeDetailsSection) {
+      return RouteInformation(uri:Uri.parse(RouteConfig.familyTreeDetails(configuration.idUniverse, configuration.nameFamilyTree).uri.path));
     }
     return RouteInformation(uri: Uri.parse(""));
   }

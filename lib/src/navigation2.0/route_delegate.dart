@@ -7,6 +7,7 @@ import 'package:frontend/src/screens/places.dart';
 import 'package:frontend/src/screens/universe_home_page.dart';
 import 'package:frontend/src/screens/unknown_screen.dart';
 import 'package:frontend/src/screens/character_details.dart';
+import 'package:frontend/src/screens/family_tree_details.dart';
 //import '../model/character.dart';
 import 'route_config.dart';
 
@@ -68,6 +69,8 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
             MaterialPage(child: PlaceDetails(placeId: _configuration.idPlace!,)),
           if (_configuration.isFamilyTreeSection)
             MaterialPage(child: MyFamiliesTree(universeId: _configuration.idUniverse!)),
+          if (_configuration.isFamilyTreeDetailsSection)
+            MaterialPage(child: MyFamilyTreeDetails(familyTreeName: _configuration.nameFamilyTree!, universeId: _configuration.idUniverse!,)),
           if (_configuration.isUnknowSection)
             const MaterialPage(child: UnknowScreen()),
         ],
@@ -91,6 +94,11 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
 
     void handlePlaceTapped(int universeId, int placeId) async {
       _configuration = RouteConfig.placeDetails(universeId, placeId);
+      notifyListeners();
+    }
+
+    void handleFamilyTreeTapped(int universeId, String familyTree) async {
+      _configuration = RouteConfig.familyTreeDetails(universeId, familyTree);
       notifyListeners();
     }
 }

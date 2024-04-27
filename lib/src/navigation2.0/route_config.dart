@@ -4,46 +4,61 @@ class RouteConfig {
   final int? idUniverse;
   final int? idCharacter;
   final int? idPlace;
+  final String? nameFamilyTree;
 
   RouteConfig.home()
     : uri = Uri(path: "/home"),
       idUniverse = null,
       idCharacter = null,
-      idPlace = null;
+      idPlace = null,
+      nameFamilyTree = null;
 
   RouteConfig.unknown()
     : uri = Uri(path: "/404"),
       idUniverse = null,
       idCharacter = null,
-      idPlace = null;
+      idPlace = null,
+      nameFamilyTree = null;
 
   RouteConfig.universe(this.idUniverse)
     : uri = Uri(path: "/home/${idUniverse.toString()}"),
       idCharacter = null,
-      idPlace = null;
+      idPlace = null,
+      nameFamilyTree = null;
 
   RouteConfig.characters(this.idUniverse)
     : uri = Uri(path: "/home/${idUniverse.toString()}/characters"),
       idCharacter = null,
-      idPlace = null;
+      idPlace = null,
+      nameFamilyTree = null;
 
   RouteConfig.characterDetails(this.idUniverse, this.idCharacter)
     : uri = Uri(path: "/home/${idUniverse.toString()}/characters/${idCharacter.toString()}"),
-      idPlace = null;
+      idPlace = null,
+      nameFamilyTree = null;
 
   RouteConfig.places(this.idUniverse)
     : uri = Uri(path: "/home/${idUniverse.toString()}/places"),
       idCharacter = null,
-      idPlace = null;
+      idPlace = null, 
+      nameFamilyTree = null;
 
   RouteConfig.placeDetails(this.idUniverse, this.idPlace)
     : uri = Uri(path: "/home/${idUniverse.toString()}/places/${idPlace.toString()}"),
-      idCharacter = null;
+      idCharacter = null,
+      nameFamilyTree = null;
 
   RouteConfig.familyTree(this.idUniverse)
     : uri = Uri(path: "/home/${idUniverse.toString()}/family_tree"),
       idCharacter = null,
+      idPlace = null,
+      nameFamilyTree = null;
+
+  RouteConfig.familyTreeDetails(this.idUniverse, this.nameFamilyTree)
+    : uri = Uri(path: "/home/${idUniverse.toString()}/family_tree/${nameFamilyTree!}"),
+      idCharacter = null,
       idPlace = null;
+
 
   bool get isHomeSection => 
     (uri == RouteConfig.home().uri);
@@ -72,6 +87,9 @@ class RouteConfig {
   bool get isFamilyTreeSection => (
     idUniverse != null 
     && uri.path.endsWith('/family_tree'));
+  bool get isFamilyTreeDetailsSection => (
+    nameFamilyTree != null
+  );
 
 
   @override

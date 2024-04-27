@@ -39,8 +39,8 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.hasData) 
             { 
               return Wrap(
-                spacing: 30, // Espace horizontal entre les carrés
-                runSpacing: 25, // Espace vertical entre les lignes de carrés
+                spacing: 30, 
+                runSpacing: 25,
                 children: snapshot.data!.map((universe) {
                   return InkWell(
                     onTap: () {
@@ -48,8 +48,8 @@ class _HomePageState extends State<HomePage> {
                           .handleUniverseTapped(universe.id);
                     },
                     child: Container(
-                      width: 200, // Largeur de chaque carré
-                      height: 200, // Hauteur de chaque carré
+                      width: 200, 
+                      height: 200,
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 17, 119, 124).withOpacity(0.7), // Opacité ajustée
                         borderRadius: BorderRadius.circular(20.0), // Bordures arrondies
@@ -86,7 +86,6 @@ class _HomePageState extends State<HomePage> {
             return  const CircularProgressIndicator();
           }
         )
-        
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateUniverseDialog,
@@ -130,7 +129,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () async {
                 await createUniverse(titleController.text, genreController.text);
-                // Actualiser la page après la création de l'univers
+                
                 setState(() {
                   futureUniverses = fetchUniverses();
                 });

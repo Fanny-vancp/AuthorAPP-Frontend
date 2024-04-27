@@ -131,7 +131,7 @@ class _AllCharactersState extends State<AllCharacters> {
 // call to api get all characters
 Future<List<Character>> fetchCharacters(int idUniverse) async {
   final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters"),
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters/details"),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -163,10 +163,10 @@ Future<Universe> fetchUniverse(int idUniverse) async {
   }
 }
 
-// call to api post character
+// call to api create new character
 Future<Character> createCharacter(int idUniverse, String pseudo) async {
   final response = await  http.post(
-    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters/"),
+    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}/characters/details"),
     headers: <String, String>{
       "Content-Type": "application/json",
     },
