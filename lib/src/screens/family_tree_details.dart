@@ -24,6 +24,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
   late Future<List<dynamic>> futureListSearch;
   bool showAddRelation = false;
   bool showUpdateRelation = false;
+  bool showDeleteRelation = false;
   late String character1;
   late String character2;
 
@@ -47,7 +48,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
               return Column(
                 children: [
                   Visibility(
-                    visible: showAddRelation || showUpdateRelation,
+                    visible: showAddRelation || showUpdateRelation || showDeleteRelation,
                     child: const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
@@ -106,6 +107,11 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                         _openUpdateRelationDialog(character1, character2);
                                         showUpdateRelation = false;
                                       }
+                                      else if (showDeleteRelation) {
+                                        character2 = character['name'];
+                                        _openDeleteRelationDialog(character1, character2);
+                                        showDeleteRelation = false;
+                                      }
                                       else {
                                         showAddRelation = true;
                                         character1 = character['name'];
@@ -118,7 +124,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                 top: 10,
                                 right: 10,
                                 child: Visibility(
-                                  visible: !showAddRelation && !showUpdateRelation,
+                                  visible: !showAddRelation && !showUpdateRelation &&!showDeleteRelation,
                                   child: PopupMenuButton(
                                     icon: const Icon(Icons.more_vert),
                                     itemBuilder: (context) => [
@@ -171,23 +177,30 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                         );
                                       }
                                       if (value == 2) {
-                                          setState(() {
-                                            if (!showAddRelation){
-                                              if (showUpdateRelation) {
-                                                character2 = character['name'];
-                                                _openUpdateRelationDialog(character1, character2);
-                                                showUpdateRelation = false;
-                                              }
-                                              else {
-                                                showUpdateRelation = true;
-                                                character1 = character['name'];
-                                              }
-                                            }
-                                          });
-
+                                        setState(() {
+                                          if (showUpdateRelation) {
+                                            character2 = character['name'];
+                                            _openUpdateRelationDialog(character1, character2);
+                                            showUpdateRelation = false;
+                                          }
+                                          else {
+                                            showUpdateRelation = true;
+                                            character1 = character['name'];
+                                          }
+                                        });
                                       }
                                       if (value == 3) {
-                                        
+                                        setState(() {
+                                          if (showDeleteRelation) {
+                                            character2 = character['name'];
+                                            _openDeleteRelationDialog(character1, character2);
+                                            showDeleteRelation = false;
+                                          }
+                                          else {
+                                            showDeleteRelation = true;
+                                            character1 = character['name'];
+                                          }
+                                        });
                                       }
                                     },
                                   ),
@@ -275,6 +288,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
       },
     );
   }
+
   Future<void> _openUpdateRelationDialog(String character1, String character2) async {
     String descriptionRelation = ''; 
     TextEditingController descriptionController = TextEditingController();
@@ -304,6 +318,31 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                 Navigator.of(context).pop();
               },
               child: const Text('Mofier'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Future<void> _openDeleteRelationDialog(String character1, String character2) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Êtes-vous sûr de vouloir supprimer la relation entre $character1 et $character2"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                removeRelation(character1, character2, widget.familyTreeName);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Supprimer'),
             ),
           ],
         );
@@ -523,6 +562,18 @@ Future<void> createRelation(String characterName1, String characterName2, String
 }
 
 // call the api to delete a relation between two characters
+Future<void> removeRelation(String characterName1, String characterName2, String familyTreeName) async {
+  final response = await  http.delete(
+    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/${characterName1}/relation/${characterName2}"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+  );
+  
+  if (response.statusCode  != 200) {
+    throw Exception('Failed to remove a relation');
+  }
+}
 
 // call the api to update a relation between two characters
 Future<void> updateRelation(String characterName1, String characterName2, String descriptionRelation, String familyTreeName) async {
