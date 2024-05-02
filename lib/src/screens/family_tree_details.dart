@@ -46,27 +46,109 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                 runSpacing: 25,
                 children: snapshot.data!.map((character) {
                   return InkWell(
-                    child: Container(
-                      width: 200, 
-                      height: 200, 
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 232, 215, 156).withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              character['name'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 200, 
+                          height: 200, 
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 232, 215, 156).withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  character['name'],
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        Positioned(
+                          bottom: 10,
+                          right: 10,
+                          child: IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () {
+                              // Ajouter une action pour le bouton en bas à droite ici
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: PopupMenuButton(
+                            icon: const Icon(Icons.more_vert),
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 1,
+                                child: Text("Supprimer le character")
+                              ),
+                              const PopupMenuItem(
+                                value: 2,
+                                child: Text("Changer une relation"),
+                              ),
+                              const PopupMenuItem(
+                                value: 3,
+                                child: Text("Supprimer une relation"),
+                              ),
+                            ],
+                            onSelected: (value) {
+                              if (value == 1) {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text("Confirmation"),
+                                      content: const Text("Êtes-vous sûr de vouloir supprimer ce personnage ?"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text("Annuler"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            try {
+                                              await removeCharacter(character['name'], widget.familyTreeName);
+                                              Navigator.of(context).pop(); 
+                                              setState(() {
+                                                futureCharacters = fetchCharacters(widget.familyTreeName);
+                                              });
+                                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnage supprimé avec succès")));
+                                            } catch (e) {
+                                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erreur lors de la suppression du personnage")));
+                                            }
+                                          },
+                                          child: const Text("Confirmer"),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                );
+                              }
+                              if (value == 2) {
+                                String character1 = character['name'];
+                                String character2 = "";
+                                String descriptionRelation = "";
+
+                              }
+                              if (value == 3) {
+                                String character1 = character['name'];
+                                String character2 = "";
+                                String descriptionRelation = "";
+                              }
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),
@@ -97,40 +179,209 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
       ),
     );
   }
+}
 
-  /*
-  // show form for adding new character
-  Future<void> _showAddCharacterDialog() async {  
-    TextEditingController searchController = TextEditingController();
-    Future<List<dynamic>> searchCharacter;
+/*class MyFamilyTreeDetails extends StatefulWidget {
+  final String familyTreeName;
+  final int universeId;
 
-    return showDialog(context: context, 
+  const MyFamilyTreeDetails({
+    required this.familyTreeName,
+    required this.universeId,
+    super.key,
+  });
+
+  @override
+  State<MyFamilyTreeDetails> createState() => _MyFamilyTreeDetailsState();
+}
+
+class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
+  late Future<List<dynamic>> futureCharacters;
+  bool isChangingRelation = false;
+
+  @override
+  void initState() {
+    super.initState();
+    futureCharacters = fetchCharacters(widget.familyTreeName);
+  } 
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.familyTreeName),
+      ),
+      body: Center(
+        child: FutureBuilder<List<dynamic>> (
+          future: futureCharacters,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const CircularProgressIndicator();
+            }
+            final characters = snapshot.data!;
+            return isChangingRelation
+                ? _buildChangingRelationUI(characters)
+                : _buildCharactersList(characters);
+          },
+        ),
+      ),
+      floatingActionButton: isChangingRelation
+          ? FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  isChangingRelation = false;
+                });
+              },
+              tooltip: 'Annuler',
+              child: const Icon(Icons.close),
+            )
+          : FloatingActionButton(
+              onPressed: () {
+                _showAddCharacterDialog();
+              },
+              tooltip: 'Ajouter un personnage',
+              child: const Icon(Icons.add),
+            ),
+    );
+  }
+
+  Widget _buildChangingRelationUI(List<dynamic> characters) {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            "Sélectionnez un autre personnage",
+            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: _buildCharactersList(characters),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCharactersList(List<dynamic> characters) {
+    return ListView.builder(
+      itemCount: characters.length,
+      itemBuilder: (context, index) {
+        final character = characters[index];
+        return InkWell(
+          child: Stack(
+            children: [
+              Container(
+                width: 200, 
+                height: 200, 
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 232, 215, 156).withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        character['name'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    // Ajouter une action pour le bouton en bas à droite ici
+                  },
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: PopupMenuButton(
+                  icon: const Icon(Icons.more_vert),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 1,
+                      child: Text("Supprimer le character")
+                    ),
+                    const PopupMenuItem(
+                      value: 2,
+                      child: Text("Changer une relation"),
+                    ),
+                    const PopupMenuItem(
+                      value: 3,
+                      child: Text("Supprimer une relation"),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    if (value == 1) {
+                      _showDeleteCharacterDialog(character);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteCharacterDialog(dynamic character) {
+    showDialog(
+      context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Choisis ton personnage à ajouter"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: searchController,
-                  decoration: const InputDecoration(labelText: "Recherche"),
-                ),
-              ],
-            )
-          ),
+          title: const Text("Confirmation"),
+          content: const Text("Êtes-vous sûr de vouloir supprimer ce personnage ?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Annuler'),
+              child: const Text("Annuler"),
             ),
-          ]
+            TextButton(
+              onPressed: () async {
+                try {
+                  await removeCharacter(character['name'], widget.familyTreeName);
+                  Navigator.of(context).pop(); 
+                  setState(() {
+                    futureCharacters = fetchCharacters(widget.familyTreeName);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnage supprimé avec succès")));
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erreur lors de la suppression du personnage")));
+                }
+              },
+              child: const Text("Confirmer"),
+            ),
+          ],
         );
       }
     );
-  }*/
-}
+  }
+
+  void _showAddCharacterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _AddCharacterDialog(
+          universeId: widget.universeId,
+          familyTreeName: widget.familyTreeName,
+        );
+      },
+    );
+  }
+}*/
 
 class _AddCharacterDialog extends StatefulWidget {
   final int universeId;
@@ -298,7 +549,8 @@ Future<void> addCharacter(String characterName, String familyTreeName) async {
     },
     body: jsonEncode(<String, String>{
       'stratPoint': characterName,
-      'endPoint': familyTreeName
+      'endPoint': familyTreeName,
+      'descriptionRelation' : '',
     }),
   );
   
@@ -309,10 +561,55 @@ Future<void> addCharacter(String characterName, String familyTreeName) async {
 
 
 // call the api to delete a character from a family tree
+Future<void> removeCharacter(String characterName, String familyTreeName) async {
+  final response = await  http.delete(
+    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/${characterName}"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+  );
+  
+  if (response.statusCode  != 200) {
+    throw Exception('Failed to remove a character');
+  }
+}
 
 // call the api to create a relation between two characters
+Future<void> createRelation(String characterName1, String characterName2, String descriptionRelation, String familyTreeName) async {
+  final response = await  http.post(
+    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/relation"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(<String, String>{
+      'stratPoint': characterName1,
+      'endPoint': characterName2,
+      'descriptionRelation' : descriptionRelation,
+    }),
+  );
+  
+  if (response.statusCode  != 200) {
+    throw Exception('Failed to update a relation');
+  }
+}
 
 // call the api to delete a relation between two characters
 
 // call the api to update a relation between two characters
-
+Future<void> updateRelation(String characterName1, String characterName2, String descriptionRelation, String familyTreeName) async {
+  final response = await  http.patch(
+    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/relation"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(<String, String>{
+      'stratPoint': characterName1,
+      'endPoint': characterName2,
+      'descriptionRelation' : descriptionRelation,
+    }),
+  );
+  
+  if (response.statusCode  != 200) {
+    throw Exception('Failed to update a relation');
+  }
+}
