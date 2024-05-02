@@ -23,6 +23,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
   late Future<List<dynamic>> futureCharacters;
   late Future<List<dynamic>> futureListSearch;
   bool showAddRelation = false;
+  bool showUpdateRelation = false;
   late String character1;
   late String character2;
 
@@ -46,7 +47,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
               return Column(
                 children: [
                   Visibility(
-                    visible: showAddRelation,
+                    visible: showAddRelation || showUpdateRelation,
                     child: const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
@@ -100,6 +101,11 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                         _openAddRelationDialog(character1, character2);
                                         showAddRelation = false;
                                       }
+                                      else if (showUpdateRelation) {
+                                        character2 = character['name'];
+                                        _openUpdateRelationDialog(character1, character2);
+                                        showUpdateRelation = false;
+                                      }
                                       else {
                                         showAddRelation = true;
                                         character1 = character['name'];
@@ -111,69 +117,80 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                               Positioned(
                                 top: 10,
                                 right: 10,
-                                child: PopupMenuButton(
-                                  icon: const Icon(Icons.more_vert),
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(
-                                      value: 1,
-                                      child: Text("Supprimer le character")
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 2,
-                                      child: Text("Changer une relation"),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 3,
-                                      child: Text("Supprimer une relation"),
-                                    ),
-                                  ],
-                                  onSelected: (value) {
-                                    if (value == 1) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: const Text("Confirmation"),
-                                            content: const Text("Êtes-vous sûr de vouloir supprimer ce personnage ?"),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: const Text("Annuler"),
-                                              ),
-                                              TextButton(
-                                                onPressed: () async {
-                                                  try {
-                                                    await removeCharacter(character['name'], widget.familyTreeName);
+                                child: Visibility(
+                                  visible: !showAddRelation && !showUpdateRelation,
+                                  child: PopupMenuButton(
+                                    icon: const Icon(Icons.more_vert),
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 1,
+                                        child: Text("Supprimer le character")
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 2,
+                                        child: Text("Changer une relation"),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 3,
+                                        child: Text("Supprimer une relation"),
+                                      ),
+                                    ],
+                                    onSelected: (value) {
+                                      if (value == 1) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Text("Confirmation"),
+                                              content: const Text("Êtes-vous sûr de vouloir supprimer ce personnage ?"),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
                                                     Navigator.of(context).pop();
-                                                    setState(() {
-                                                      futureCharacters = fetchCharacters(widget.familyTreeName);
-                                                    });
-                                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnage supprimé avec succès")));
-                                                  } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erreur lors de la suppression du personnage")));
-                                                  }
-                                                },
-                                                child: const Text("Confirmer"),
-                                              ),
-                                            ],
-                                          );
-                                        }
-                                      );
-                                    }
-                                    if (value == 2) {
-                                      /*String character1 = character['name'];
-                                      String character2 = "";
-                                      String descriptionRelation = "";*/
+                                                  },
+                                                  child: const Text("Annuler"),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    try {
+                                                      await removeCharacter(character['name'], widget.familyTreeName);
+                                                      Navigator.of(context).pop();
+                                                      setState(() {
+                                                        futureCharacters = fetchCharacters(widget.familyTreeName);
+                                                      });
+                                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnage supprimé avec succès")));
+                                                    } catch (e) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erreur lors de la suppression du personnage")));
+                                                    }
+                                                  },
+                                                  child: const Text("Confirmer"),
+                                                ),
+                                              ],
+                                            );
+                                          }
+                                        );
+                                      }
+                                      if (value == 2) {
+                                          setState(() {
+                                            if (!showAddRelation){
+                                              if (showUpdateRelation) {
+                                                character2 = character['name'];
+                                                _openUpdateRelationDialog(character1, character2);
+                                                showUpdateRelation = false;
+                                              }
+                                              else {
+                                                showUpdateRelation = true;
+                                                character1 = character['name'];
+                                              }
+                                            }
+                                          });
 
-                                    }
-                                    if (value == 3) {
-                                      /*String character1 = character['name'];
-                                      String character2 = "";
-                                      String descriptionRelation = "";*/
-                                    }
-                                  },
+                                      }
+                                      if (value == 3) {
+                                        
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
                             ],
@@ -194,21 +211,32 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
           },
         ),
       ),
-      floatingActionButton: IconButton(
-        icon: const Icon(Icons.add),
-        tooltip: 'Ajouter un personnage',
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return _AddCharacterDialog(
-                universeId: widget.universeId,
-                familyTreeName: widget.familyTreeName,
+      floatingActionButton: showAddRelation || showUpdateRelation
+        ? FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                showAddRelation = false;
+                showUpdateRelation = false;
+              });
+            },
+            tooltip: 'Annuler',
+            child: const Icon(Icons.close),
+          )
+        : FloatingActionButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return _AddCharacterDialog(
+                    universeId: widget.universeId,
+                    familyTreeName: widget.familyTreeName,
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+            tooltip: 'Ajouter un personnage',
+            child: const Icon(Icons.add),
+          ),
     );
   }
 
@@ -241,6 +269,41 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                 Navigator.of(context).pop();
               },
               child: const Text('Ajouter'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Future<void> _openUpdateRelationDialog(String character1, String character2) async {
+    String descriptionRelation = ''; 
+    TextEditingController descriptionController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Modifier la relation entre $character1 et $character2"),
+          content: TextField(
+            controller: descriptionController,
+            decoration: const InputDecoration(labelText: 'Description de la relation'),
+            onChanged: (value) {
+              descriptionRelation = value;
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                updateRelation(character1, character2, descriptionRelation, widget.familyTreeName);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Mofier'),
             ),
           ],
         );
