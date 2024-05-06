@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-//import 'package:frontend/src/navigation/menu_drawer.dart';
 import 'package:http/http.dart' as http;
+import '../navigation2.0/route_delegate.dart';
+import '../navigation2.0/route_config.dart';
 
 import '../model/universe.dart';
 
@@ -39,7 +40,14 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.familyTreeName),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            (Router.of(context).routerDelegate as MyRouteDelegate).handleRouteChange(RouteConfig.familyTree(widget.universeId));
+          },
+        ),
       ),
+      
       body: Center(
         child: FutureBuilder<List<dynamic>>(
           future: futureCharacters,
@@ -224,12 +232,13 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
           },
         ),
       ),
-      floatingActionButton: showAddRelation || showUpdateRelation
+      floatingActionButton: showAddRelation || showUpdateRelation || showDeleteRelation
         ? FloatingActionButton(
             onPressed: () {
               setState(() {
                 showAddRelation = false;
                 showUpdateRelation = false;
+                showDeleteRelation = false;
               });
             },
             tooltip: 'Annuler',
@@ -254,20 +263,44 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
   }
 
   Future<void> _openAddRelationDialog(String character1, String character2) async {
-    String descriptionRelation = ''; 
-    TextEditingController descriptionController = TextEditingController();
+    //String descriptionRelation = ''; 
+    //TextEditingController descriptionController = TextEditingController();
+    String selectedRelationDescription = 'Parent';
+    List<String> relationDescriptions = [
+      'Parent',
+      'Enfant',
+      'Marrié(e)',
+      'Divorcé(e)',
+      'Conjoint',
+      'En couple'
+    ];
+
 
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Ajouter une relation avec $character1 et $character2"),
-          content: TextField(
+          /*content: TextField(
             controller: descriptionController,
             decoration: const InputDecoration(labelText: 'Description de la relation'),
             onChanged: (value) {
               descriptionRelation = value;
             },
+          ),*/
+          content: DropdownButton<String>(
+            value: selectedRelationDescription,
+            onChanged: (newValue) {
+              setState(() {
+                selectedRelationDescription = newValue.toString();
+              });
+            },
+            items: relationDescriptions.map((String relation) {
+              return DropdownMenuItem<String>(
+                value: relation,
+                child: Text(relation),
+              );
+            }).toList(),
           ),
           actions: <Widget>[
             TextButton(
@@ -278,8 +311,12 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
             ),
             TextButton(
               onPressed: () {
-                createRelation(character1, character2, descriptionRelation, widget.familyTreeName);
-                Navigator.of(context).pop();
+                if (selectedRelationDescription.isNotEmpty) {
+                  createRelation(character1, character2, selectedRelationDescription, widget.familyTreeName);
+                  Navigator.of(context).pop();
+                } else {
+                  // Affichez un message d'erreur ou empêchez l'utilisateur de continuer sans sélectionner une relation
+                }
               },
               child: const Text('Ajouter'),
             ),

@@ -41,20 +41,6 @@ class MyRouteDelegate extends RouterDelegate<RouteConfig>  with ChangeNotifier,
           const MaterialPage(
             child: HomePage(),
           ),
-          /*if (_configuration.uri == RouteConfig.universe(_configuration.idUniverse).uri) 
-            MaterialPage(child: MyUniverse(universeId: _configuration.idUniverse!)),
-          if ( _configuration.uri == RouteConfig.characters(_configuration.idUniverse).uri)
-            MaterialPage(child: AllCharacters(universeId: _configuration.idUniverse!)),
-          if ( _configuration.uri == RouteConfig.characterDetails(_configuration.idUniverse, 
-          _configuration.idCharacter).uri)
-            MaterialPage(child: CharacterDetails(characterId: _configuration.idCharacter!,)),
-          if ( _configuration.uri == RouteConfig.places(_configuration.idUniverse).uri)
-            MaterialPage(child: AllPlaces(universeId: _configuration.idUniverse!)),
-          if ( _configuration.uri == RouteConfig.placeDetails(_configuration.idUniverse, 
-          _configuration.idPlace).uri)
-            MaterialPage(child: PlaceDetails(placeId: _configuration.idPlace!,)),
-          if (_configuration.uri == RouteConfig.unknown().uri) 
-            const MaterialPage(child: UnknowScreen()),*/
           if (_configuration.isHomeSection)
             const MaterialPage(child: HomePage()),
           if (_configuration.isUniverseSection)
