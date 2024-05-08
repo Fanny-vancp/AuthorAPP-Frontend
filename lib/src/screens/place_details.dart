@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../model/place.dart';
 import '../navigation2.0/route_delegate.dart';
 import '../navigation2.0/route_config.dart';
+import '../requestAPI/place.dart';
 
 class PlaceDetails extends StatefulWidget {
   final int placeId;
@@ -100,23 +98,5 @@ class PlaceCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-// call the api get place
-Future<Place> fetchPlace(int placeId) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/1/places/${placeId.toString()}"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if(response.statusCode == 200) {
-    //Iterable jsonResponse = jsonDecode(response.body);
-    Place place = Place.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-    return place;
-  } else {
-    throw Exception('Failed to load universe.');
   }
 }

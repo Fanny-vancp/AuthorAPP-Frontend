@@ -183,3 +183,37 @@ Future<List<CharacterNode>> fetchCharactersFromFamilyTree(String familyTreeName)
     throw Exception('Failed to load universe.');
   }
 }
+
+// call to api create a new family tree
+Future<void> createFamilyTree(String universeName, String name) async {
+  final response = await  http.post(
+    Uri.parse("https://localhost:7162/api/universes/$universeName/families_trees"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode(<String, String>{
+      'name': name,
+    }),
+  );
+  
+  if (response.statusCode  != 200) {
+    throw Exception('Failed to create character');
+  }
+}
+
+// call to api get all th families trees
+Future<List<dynamic>> fetchFamiliesTrees(String universeName) async {
+  final response = await http.get(
+    Uri.parse("https://localhost:7162/api/universes/$universeName/families_trees"),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if(response.statusCode == 200) {
+    List<dynamic> jsonResponse = jsonDecode(response.body);
+    return jsonResponse;
+  } else {
+    throw Exception('Failed to load universe.');
+  }
+}

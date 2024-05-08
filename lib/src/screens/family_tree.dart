@@ -1,11 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../navigation/menu_drawer.dart';
 import '../navigation2.0/route_delegate.dart';
 import '../model/universe.dart';
+import '../requestAPI/family_tree.dart';
+import '../requestAPI/universe.dart';
 
 class MyFamiliesTree extends StatefulWidget {
   final int universeId;
@@ -137,56 +136,5 @@ class _MyFamiliesTreeState extends State<MyFamiliesTree> {
         );
       },
     );
-  }
-}
-
-// call to api get universe
-Future<Universe> fetchUniverse(int idUniverse) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if(response.statusCode == 200) {
-    Universe universe = Universe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-    return universe;
-  } else {
-    throw Exception('Failed to load universe.');
-  }
-}
-
-// call to api get all th families trees
-Future<List<dynamic>> fetchFamiliesTrees(String universeName) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/$universeName/families_trees"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if(response.statusCode == 200) {
-    List<dynamic> jsonResponse = jsonDecode(response.body);
-    return jsonResponse;
-  } else {
-    throw Exception('Failed to load universe.');
-  }
-}
-
-// call to api create a new family tree
-Future<void> createFamilyTree(String universeName, String name) async {
-  final response = await  http.post(
-    Uri.parse("https://localhost:7162/api/universes/$universeName/families_trees"),
-    headers: <String, String>{
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode(<String, String>{
-      'name': name,
-    }),
-  );
-  
-  if (response.statusCode  != 200) {
-    throw Exception('Failed to create character');
   }
 }

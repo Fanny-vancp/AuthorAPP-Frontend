@@ -41,3 +41,21 @@ Future<Character> createCharacter(int idUniverse, String pseudo) async {
     throw Exception('Failed to create character');
   }
 }
+
+// call the api get character
+Future<Character> fetchCharacter(int characterId) async {
+  final response = await http.get(
+    Uri.parse("https://localhost:7162/api/universes/1/characters/details/${characterId.toString()}"),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if(response.statusCode == 200) {
+    //Iterable jsonResponse = jsonDecode(response.body);
+    Character character = Character.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    return character;
+  } else {
+    throw Exception('Failed to load universe.');
+  }
+}

@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../model/character.dart';
 import '../navigation2.0/route_delegate.dart';
 import '../navigation2.0/route_config.dart';
+import '../requestAPI/character.dart';
 
 class CharacterDetails extends StatefulWidget {
   final int characterId;
@@ -109,24 +107,5 @@ class CharacterCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-
-// call the api get character
-Future<Character> fetchCharacter(int characterId) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/1/characters/details/${characterId.toString()}"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if(response.statusCode == 200) {
-    //Iterable jsonResponse = jsonDecode(response.body);
-    Character character = Character.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-    return character;
-  } else {
-    throw Exception('Failed to load universe.');
   }
 }
