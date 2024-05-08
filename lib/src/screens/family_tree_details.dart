@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import '../navigation2.0/route_delegate.dart';
 import '../navigation2.0/route_config.dart';
-
-import '../model/universe.dart';
+import '../model/character_node.dart';
+//import '../model/relation_line.dart';-
+import '../requestAPI/family_tree.dart';
 
 class MyFamilyTreeDetails extends StatefulWidget {
   final String familyTreeName;
@@ -21,7 +23,8 @@ class MyFamilyTreeDetails extends StatefulWidget {
 }
 
 class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
-  late Future<List<dynamic>> futureCharacters;
+  //late Future<List<dynamic>> futureCharacters;
+  late Future<List<CharacterNode>> futureCharacters;
   late Future<List<dynamic>> futureListSearch;
   bool showAddRelation = false;
   bool showUpdateRelation = false;
@@ -32,7 +35,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
   @override
   void initState() {
     super.initState();
-    futureCharacters = fetchCharacters(widget.familyTreeName);
+    futureCharacters = fetchCharactersFromFamilyTree(widget.familyTreeName);
   } 
 
   @override
@@ -49,7 +52,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
       ),
       
       body: Center(
-        child: FutureBuilder<List<dynamic>>(
+        child: FutureBuilder<List<CharacterNode>>(
           future: futureCharacters,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -88,7 +91,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        character['name'],
+                                        character.name,
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
@@ -106,23 +109,23 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                   onPressed: () {
                                     setState(() {
                                       if (showAddRelation) {
-                                        character2 = character['name'];
+                                        character2 = character.name;
                                         _openAddRelationDialog(character1, character2);
                                         showAddRelation = false;
                                       }
                                       else if (showUpdateRelation) {
-                                        character2 = character['name'];
+                                        character2 = character.name;
                                         _openUpdateRelationDialog(character1, character2);
                                         showUpdateRelation = false;
                                       }
                                       else if (showDeleteRelation) {
-                                        character2 = character['name'];
+                                        character2 = character.name;
                                         _openDeleteRelationDialog(character1, character2);
                                         showDeleteRelation = false;
                                       }
                                       else {
                                         showAddRelation = true;
-                                        character1 = character['name'];
+                                        character1 = character.name;
                                       }
                                     });
                                   },
@@ -167,10 +170,10 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                                 TextButton(
                                                   onPressed: () async {
                                                     try {
-                                                      await removeCharacter(character['name'], widget.familyTreeName);
+                                                      await removeCharacterTree(character.name, widget.familyTreeName);
                                                       Navigator.of(context).pop();
                                                       setState(() {
-                                                        futureCharacters = fetchCharacters(widget.familyTreeName);
+                                                        futureCharacters = fetchCharactersFromFamilyTree(widget.familyTreeName);
                                                       });
                                                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Personnage supprimé avec succès")));
                                                     } catch (e) {
@@ -187,26 +190,26 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                                       if (value == 2) {
                                         setState(() {
                                           if (showUpdateRelation) {
-                                            character2 = character['name'];
+                                            character2 = character.name;
                                             _openUpdateRelationDialog(character1, character2);
                                             showUpdateRelation = false;
                                           }
                                           else {
                                             showUpdateRelation = true;
-                                            character1 = character['name'];
+                                            character1 = character.name;
                                           }
                                         });
                                       }
                                       if (value == 3) {
                                         setState(() {
                                           if (showDeleteRelation) {
-                                            character2 = character['name'];
+                                            character2 = character.name;
                                             _openDeleteRelationDialog(character1, character2);
                                             showDeleteRelation = false;
                                           }
                                           else {
                                             showDeleteRelation = true;
-                                            character1 = character['name'];
+                                            character1 = character.name;
                                           }
                                         });
                                       }
@@ -388,6 +391,98 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
   }
 }
 
+/*class FamilyTreePainter extends CustomPainter{
+  final List<CharacterNode> characters;
+
+  FamilyTreePainter(
+    this.characters,
+  );
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final nodePositions = calculateNodePositions(size);
+    final relationLines = calculateRelationLines(nodePositions);
+
+    drawLines(canvas, relationLines);
+    drawNodes(canvas, nodePositions);
+  }
+
+  Map<CharacterNode, Offset> calculateNodePositions(Size size) {
+    final Map<CharacterNode, Offset> nodePositions = {};
+
+    // Position initiale du premier personnage
+    double startX = size.width / 2;
+    double startY = 50.0;
+
+    const double levelSpacing = 150.0; // Espacement vertical entre les niveaux de l'arbre
+    const double siblingSpacing = 100.0; // Espacement horizontal entre les frères et sœurs
+
+    // Fonction récursive pour positionner les nœuds de manière récursive
+    void positionNodes(CharacterNode node, double x, double y) {
+      nodePositions[node] = Offset(x, y);
+
+      // Positionner les enfants
+      List<CharacterNode> children = node.children;
+      if (children.isNotEmpty) {
+        final double totalWidth = siblingSpacing * (children.length - 1);
+        double startX = x - totalWidth / 2;
+        double childY = y + levelSpacing;
+
+        for (int i = 0; i < children.length; i++) {
+          positionNodes(children[i], startX + siblingSpacing * i, childY);
+        }
+      }
+    }
+
+    // Positionner le premier personnage (racine de l'arbre)
+    positionNodes(characters.first, startX, startY);
+
+    return nodePositions;
+  }
+
+  List<RelationLine> calculateRelationLines(Map<CharacterNode, Offset> nodePositions) {
+    final List<RelationLine> relationLines = [];
+
+    // Parcourir chaque personnage pour trouver ses relations et dessiner les lignes correspondantes
+    for (final character in nodePositions.keys) {
+      for (final child in character.children) {
+        // Dessiner une ligne de la position du parent à la position de l'enfant
+        relationLines.add(RelationLine(
+          start: nodePositions[character]!,
+          end: nodePositions[child]!,
+        ));
+      }
+    }
+
+    return relationLines;
+  }
+
+  void drawNodes(Canvas canvas, Map<CharacterNode, Offset> nodePositions) {
+    final Paint nodePaint = Paint()..color = Colors.blue;
+    const double nodeRadius = 20.0;
+
+    // Dessiner chaque personnage comme un cercle à sa position respective
+    nodePositions.forEach((character, position) {
+      canvas.drawCircle(position, nodeRadius, nodePaint);
+    });
+  }
+
+  void drawLines(Canvas canvas, List<RelationLine> relationLines) {
+    final Paint linePaint = Paint()..color = Colors.black..strokeWidth = 2.0;
+
+    // Dessiner chaque ligne de relation entre les nœuds sur le canvas
+    relationLines.forEach((line) {
+      canvas.drawLine(line.start, line.end, linePaint);
+    });
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+}*/
+
+
 class _AddCharacterDialog extends StatefulWidget {
   final int universeId;
   final String familyTreeName;
@@ -446,7 +541,7 @@ class _AddCharacterDialogState extends State<_AddCharacterDialog> {
                         return ListTile(
                           title: Text(character['name']),
                           onTap: () async {
-                            await addCharacter(character['name'], widget.familyTreeName);
+                            await addCharacterTree(character['name'], widget.familyTreeName);
                             Navigator.of(context).pop();
                           },
                         );
@@ -474,7 +569,7 @@ class _AddCharacterDialogState extends State<_AddCharacterDialog> {
 }
 
 // call the api to get characters from the familyTree
-Future<List<dynamic>> fetchCharacters(String familyTreeName) async {
+/*Future<List<dynamic>> fetchCharactersFromFamilyTree(String familyTreeName) async {
   final response = await http.get(
     Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters"),
     headers: {
@@ -488,145 +583,37 @@ Future<List<dynamic>> fetchCharacters(String familyTreeName) async {
   } else {
     throw Exception('Failed to load universe.');
   }
-}
+}*/
 
-
-// call the api to get all characters from the universe 
-// except them that are already in the familyTree
-Future<List<dynamic>> fetchSearchCharacterToAdd(int universeId, 
-String searchCharacter, String familyTreeName) async {
-  var universe = await fetchUniverse(universeId);
-  var universeName = universe.title;
-
-  // Fetch characters in the family tree
-  List<dynamic> charactersInFamily = await fetchCharacters(familyTreeName);
-
-  if  (searchCharacter=='') {
-    return charactersInFamily;
-  }
-
+Future<List<CharacterNode>> fetchCharactersFromFamilyTree(String familyTreeName) async {
   final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/${universeName}/characters/${searchCharacter}"),
+    Uri.parse("https://localhost:7162/api/families_trees/$familyTreeName/characters"),
     headers: {
       'Content-Type': 'application/json',
     },
   );
 
-  if(response.statusCode == 200) {
-    List<dynamic> charactersInUniverse = jsonDecode(response.body);
+  if (response.statusCode == 200) {
+    List<dynamic> jsonResponse = jsonDecode(response.body);
+    List<CharacterNode> characters = [];
 
-    // Remove characters that are already in the family tree from charactersInUniverse
-    charactersInUniverse.removeWhere((characterInUniverse) =>
-        charactersInFamily.any((characterInFamily) =>
-            characterInFamily['name'] == characterInUniverse['name']));
-    
-    return charactersInUniverse;
-  } 
-  else {
-    throw Exception('Failed to search character(s).');
-  }
-}
+    for (var character in jsonResponse) {
+      CharacterNode node = CharacterNode(
+        character['name'],
+        character['children'],
+        character['parents'],
+        character['married'],
+        character['divorced'],
+        character['couple'],
+        false,
+        character['level'],
+        false,
+      );
+      characters.add(node);
+    }
 
-// call to api get universe
-Future<Universe> fetchUniverse(int idUniverse) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/${idUniverse.toString()}"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if(response.statusCode == 200) {
-    Universe universe = Universe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
-    return universe;
+    return characters;
   } else {
     throw Exception('Failed to load universe.');
-  }
-}
-
-
-// call the api to add a character in the family tree
-Future<void> addCharacter(String characterName, String familyTreeName) async {
-  final response = await  http.post(
-    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters"),
-    headers: <String, String>{
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode(<String, String>{
-      'stratPoint': characterName,
-      'endPoint': familyTreeName,
-      'descriptionRelation' : '',
-    }),
-  );
-  
-  if (response.statusCode  != 200) {
-    throw Exception('Failed to add a character');
-  }
-}
-
-
-// call the api to delete a character from a family tree
-Future<void> removeCharacter(String characterName, String familyTreeName) async {
-  final response = await  http.delete(
-    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/${characterName}"),
-    headers: <String, String>{
-      "Content-Type": "application/json",
-    },
-  );
-  
-  if (response.statusCode  != 200) {
-    throw Exception('Failed to remove a character');
-  }
-}
-
-// call the api to create a relation between two characters
-Future<void> createRelation(String characterName1, String characterName2, String descriptionRelation, String familyTreeName) async {
-  final response = await  http.post(
-    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/relation"),
-    headers: <String, String>{
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode(<String, String>{
-      'stratPoint': characterName1,
-      'endPoint': characterName2,
-      'descriptionRelation' : descriptionRelation,
-    }),
-  );
-  
-  if (response.statusCode  != 200) {
-    throw Exception('Failed to update a relation');
-  }
-}
-
-// call the api to delete a relation between two characters
-Future<void> removeRelation(String characterName1, String characterName2, String familyTreeName) async {
-  final response = await  http.delete(
-    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/${characterName1}/relation/${characterName2}"),
-    headers: <String, String>{
-      "Content-Type": "application/json",
-    },
-  );
-  
-  if (response.statusCode  != 200) {
-    throw Exception('Failed to remove a relation');
-  }
-}
-
-// call the api to update a relation between two characters
-Future<void> updateRelation(String characterName1, String characterName2, String descriptionRelation, String familyTreeName) async {
-  final response = await  http.patch(
-    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters/relation"),
-    headers: <String, String>{
-      "Content-Type": "application/json",
-    },
-    body: jsonEncode(<String, String>{
-      'stratPoint': characterName1,
-      'endPoint': characterName2,
-      'descriptionRelation' : descriptionRelation,
-    }),
-  );
-  
-  if (response.statusCode  != 200) {
-    throw Exception('Failed to update a relation');
   }
 }

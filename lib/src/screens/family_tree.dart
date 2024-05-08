@@ -160,7 +160,7 @@ Future<Universe> fetchUniverse(int idUniverse) async {
 // call to api get all th families trees
 Future<List<dynamic>> fetchFamiliesTrees(String universeName) async {
   final response = await http.get(
-    Uri.parse("https://localhost:7162/api/universes/${universeName}/families_trees"),
+    Uri.parse("https://localhost:7162/api/universes/$universeName/families_trees"),
     headers: {
       'Content-Type': 'application/json',
     },
@@ -177,7 +177,7 @@ Future<List<dynamic>> fetchFamiliesTrees(String universeName) async {
 // call to api create a new family tree
 Future<void> createFamilyTree(String universeName, String name) async {
   final response = await  http.post(
-    Uri.parse("https://localhost:7162/api/universes/${universeName}/families_trees"),
+    Uri.parse("https://localhost:7162/api/universes/$universeName/families_trees"),
     headers: <String, String>{
       "Content-Type": "application/json",
     },
