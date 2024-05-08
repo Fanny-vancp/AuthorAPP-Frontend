@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../navigation2.0/route_delegate.dart';
 import '../navigation2.0/route_config.dart';
@@ -565,55 +562,5 @@ class _AddCharacterDialogState extends State<_AddCharacterDialog> {
         ),
       ],
     );
-  }
-}
-
-// call the api to get characters from the familyTree
-/*Future<List<dynamic>> fetchCharactersFromFamilyTree(String familyTreeName) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/families_trees/${familyTreeName}/characters"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if(response.statusCode == 200) {
-    List<dynamic> jsonResponse = jsonDecode(response.body);
-    return jsonResponse;
-  } else {
-    throw Exception('Failed to load universe.');
-  }
-}*/
-
-Future<List<CharacterNode>> fetchCharactersFromFamilyTree(String familyTreeName) async {
-  final response = await http.get(
-    Uri.parse("https://localhost:7162/api/families_trees/$familyTreeName/characters"),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  );
-
-  if (response.statusCode == 200) {
-    List<dynamic> jsonResponse = jsonDecode(response.body);
-    List<CharacterNode> characters = [];
-
-    for (var character in jsonResponse) {
-      CharacterNode node = CharacterNode(
-        character['name'],
-        character['children'],
-        character['parents'],
-        character['married'],
-        character['divorced'],
-        character['couple'],
-        false,
-        character['level'],
-        false,
-      );
-      characters.add(node);
-    }
-
-    return characters;
-  } else {
-    throw Exception('Failed to load universe.');
   }
 }

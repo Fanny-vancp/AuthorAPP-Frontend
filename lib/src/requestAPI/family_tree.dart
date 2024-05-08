@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../requestAPI/universe.dart';
-import '../screens/family_tree_details.dart';
+import '../model/character_node.dart';
 
 // call the api to add a character in the family tree
 Future<void> addCharacterTree(String characterName, String familyTreeName) async {
@@ -51,12 +51,19 @@ String searchCharacter, String familyTreeName) async {
   var universeName = universe.title;
 
   // Fetch characters in the family tree
-  List<dynamic> charactersInFamily = await fetchCharactersFromFamilyTree(familyTreeName);
+  List<CharacterNode> charactersInFamily = await fetchCharactersFromFamilyTree(familyTreeName);
+
+  // Fetch characters in the universe
+  List<dynamic> charactersInUniverse = await fetchCharactersFromUniverse(universeName);
 
   if  (searchCharacter=='') {
-    return charactersInFamily;
+    charactersInUniverse.removeWhere((charactersInUniverse) =>
+        charactersInFamily.any((characterInFamily) =>
+            characterInFamily.name == charactersInUniverse['name']));
+    return charactersInUniverse;
   }
 
+  // call the api to get only the characters who match with the search parameter
   final response = await http.get(
     Uri.parse("https://localhost:7162/api/universes/$universeName/characters/$searchCharacter"),
     headers: {
@@ -65,17 +72,34 @@ String searchCharacter, String familyTreeName) async {
   );
 
   if(response.statusCode == 200) {
-    List<dynamic> charactersInUniverse = jsonDecode(response.body);
+    List<dynamic> charactersInUniverseSearch = jsonDecode(response.body);
 
-    // Remove characters that are already in the family tree from charactersInUniverse
-    charactersInUniverse.removeWhere((characterInUniverse) =>
+    // Remove characters that are already in the family tree from charactersInUniverseSearch
+    charactersInUniverseSearch.removeWhere((charactersInUniverseSearch) =>
         charactersInFamily.any((characterInFamily) =>
-            characterInFamily['name'] == characterInUniverse['name']));
+            characterInFamily.name == charactersInUniverseSearch['name']));
     
-    return charactersInUniverse;
+    return charactersInUniverseSearch;
   } 
   else {
     throw Exception('Failed to search character(s).');
+  }
+}
+
+// call the api to get all character from a universe
+Future<List<dynamic>> fetchCharactersFromUniverse(String  universeName) async{
+  final response = await  http.get(
+    Uri.parse("https://localhost:7162/api/universes/$universeName/characters"),
+    headers: <String, String>{
+      "Content-Type": "application/json",
+    },
+  );
+
+  if(response.statusCode == 200) {
+    List<dynamic> charactersList = jsonDecode(response.body);
+    return charactersList;
+  } else {
+    throw Exception('Failed to load characters from universe.');
   }
 }
 
@@ -123,5 +147,39 @@ Future<void> updateRelation(String characterName1, String characterName2, String
   
   if (response.statusCode  != 200) {
     throw Exception('Failed to update a relation');
+  }
+}
+
+// call the api to get characters from the familyTree
+Future<List<CharacterNode>> fetchCharactersFromFamilyTree(String familyTreeName) async {
+  final response = await http.get(
+    Uri.parse("https://localhost:7162/api/families_trees/$familyTreeName/characters"),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    List<dynamic> jsonResponse = jsonDecode(response.body);
+    List<CharacterNode> characters = [];
+
+    for (var character in jsonResponse) {
+      CharacterNode node = CharacterNode(
+        character['name'],
+        character['children'],
+        character['parents'],
+        character['married'],
+        character['divorced'],
+        character['couple'],
+        false,
+        character['level'],
+        false,
+      );
+      characters.add(node);
+    }
+
+    return characters;
+  } else {
+    throw Exception('Failed to load universe.');
   }
 }
