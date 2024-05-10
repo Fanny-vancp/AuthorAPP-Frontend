@@ -180,7 +180,7 @@ Future<List<CharacterNode>> fetchCharactersFromFamilyTree(String familyTreeName)
 
     return characters;
   } else {
-    throw Exception('Failed to load universe.');
+    throw Exception('Failed to load character from the family tree.');
   }
 }
 

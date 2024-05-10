@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../navigation2.0/route_delegate.dart';
-import '../navigation2.0/route_config.dart';
-import '../model/character_node.dart';
-//import '../model/relation_line.dart';-
-import '../requestAPI/family_tree.dart';
+import '../../navigation2.0/route_delegate.dart';
+import '../../navigation2.0/route_config.dart';
+import 'add_character_dialog.dart';
+import 'family_tree_painter.dart';
+import '../../model/character_node.dart';
+import '../../requestAPI/family_tree.dart';
 
 class MyFamilyTreeDetails extends StatefulWidget {
   final String familyTreeName;
@@ -20,7 +21,6 @@ class MyFamilyTreeDetails extends StatefulWidget {
 }
 
 class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
-  //late Future<List<dynamic>> futureCharacters;
   late Future<List<CharacterNode>> futureCharacters;
   late Future<List<dynamic>> futureListSearch;
   bool showAddRelation = false;
@@ -53,7 +53,17 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
           future: futureCharacters,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return Column(
+              final List<CharacterNode> characters = snapshot.data ?? [];
+              final Set<String> displayedCharacters = {};
+
+              return CustomPaint(
+                painter: FamilyTreePainter(
+                  //characters: characters.where((character) => character.level == 0).toList(),
+                  characters: characters,
+                  displayedCharacters: displayedCharacters,
+                ),
+              );
+              /*return Column(
                 children: [
                   Visibility(
                     visible: showAddRelation || showUpdateRelation || showDeleteRelation,
@@ -221,7 +231,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                     ),
                   ),
                 ],
-              );
+              );*/
             }
             else if (snapshot.hasError) {
               return Text('${snapshot.error}');
@@ -249,7 +259,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return _AddCharacterDialog(
+                  return AddCharacterDialog(
                     universeId: widget.universeId,
                     familyTreeName: widget.familyTreeName,
                   );
@@ -263,8 +273,6 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
   }
 
   Future<void> _openAddRelationDialog(String character1, String character2) async {
-    //String descriptionRelation = ''; 
-    //TextEditingController descriptionController = TextEditingController();
     String selectedRelationDescription = 'Parent';
     List<String> relationDescriptions = [
       'Parent',
@@ -281,13 +289,6 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Ajouter une relation avec $character1 et $character2"),
-          /*content: TextField(
-            controller: descriptionController,
-            decoration: const InputDecoration(labelText: 'Description de la relation'),
-            onChanged: (value) {
-              descriptionRelation = value;
-            },
-          ),*/
           content: DropdownButton<String>(
             value: selectedRelationDescription,
             onChanged: (newValue) {
@@ -315,7 +316,7 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
                   createRelation(character1, character2, selectedRelationDescription, widget.familyTreeName);
                   Navigator.of(context).pop();
                 } else {
-                  // Affichez un message d'erreur ou empêchez l'utilisateur de continuer sans sélectionner une relation
+                  // TO DO: Affichez un message d'erreur ou empêchez l'utilisateur de continuer sans sélectionner une relation
                 }
               },
               child: const Text('Ajouter'),
@@ -384,183 +385,6 @@ class _MyFamilyTreeDetailsState extends State<MyFamilyTreeDetails> {
           ],
         );
       },
-    );
-  }
-}
-
-/*class FamilyTreePainter extends CustomPainter{
-  final List<CharacterNode> characters;
-
-  FamilyTreePainter(
-    this.characters,
-  );
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final nodePositions = calculateNodePositions(size);
-    final relationLines = calculateRelationLines(nodePositions);
-
-    drawLines(canvas, relationLines);
-    drawNodes(canvas, nodePositions);
-  }
-
-  Map<CharacterNode, Offset> calculateNodePositions(Size size) {
-    final Map<CharacterNode, Offset> nodePositions = {};
-
-    // Position initiale du premier personnage
-    double startX = size.width / 2;
-    double startY = 50.0;
-
-    const double levelSpacing = 150.0; // Espacement vertical entre les niveaux de l'arbre
-    const double siblingSpacing = 100.0; // Espacement horizontal entre les frères et sœurs
-
-    // Fonction récursive pour positionner les nœuds de manière récursive
-    void positionNodes(CharacterNode node, double x, double y) {
-      nodePositions[node] = Offset(x, y);
-
-      // Positionner les enfants
-      List<CharacterNode> children = node.children;
-      if (children.isNotEmpty) {
-        final double totalWidth = siblingSpacing * (children.length - 1);
-        double startX = x - totalWidth / 2;
-        double childY = y + levelSpacing;
-
-        for (int i = 0; i < children.length; i++) {
-          positionNodes(children[i], startX + siblingSpacing * i, childY);
-        }
-      }
-    }
-
-    // Positionner le premier personnage (racine de l'arbre)
-    positionNodes(characters.first, startX, startY);
-
-    return nodePositions;
-  }
-
-  List<RelationLine> calculateRelationLines(Map<CharacterNode, Offset> nodePositions) {
-    final List<RelationLine> relationLines = [];
-
-    // Parcourir chaque personnage pour trouver ses relations et dessiner les lignes correspondantes
-    for (final character in nodePositions.keys) {
-      for (final child in character.children) {
-        // Dessiner une ligne de la position du parent à la position de l'enfant
-        relationLines.add(RelationLine(
-          start: nodePositions[character]!,
-          end: nodePositions[child]!,
-        ));
-      }
-    }
-
-    return relationLines;
-  }
-
-  void drawNodes(Canvas canvas, Map<CharacterNode, Offset> nodePositions) {
-    final Paint nodePaint = Paint()..color = Colors.blue;
-    const double nodeRadius = 20.0;
-
-    // Dessiner chaque personnage comme un cercle à sa position respective
-    nodePositions.forEach((character, position) {
-      canvas.drawCircle(position, nodeRadius, nodePaint);
-    });
-  }
-
-  void drawLines(Canvas canvas, List<RelationLine> relationLines) {
-    final Paint linePaint = Paint()..color = Colors.black..strokeWidth = 2.0;
-
-    // Dessiner chaque ligne de relation entre les nœuds sur le canvas
-    relationLines.forEach((line) {
-      canvas.drawLine(line.start, line.end, linePaint);
-    });
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}*/
-
-
-class _AddCharacterDialog extends StatefulWidget {
-  final int universeId;
-  final String familyTreeName;
-
-  const _AddCharacterDialog({
-    required this.universeId,
-    required this.familyTreeName,
-  });
-
-  @override
-  _AddCharacterDialogState createState() => _AddCharacterDialogState();
-}
-
-class _AddCharacterDialogState extends State<_AddCharacterDialog> {
-  TextEditingController searchController = TextEditingController(text: '');
-  late Future<List<dynamic>> searchResults;
-
-  @override
-  void initState() {
-    super.initState();
-    searchResults = fetchSearchCharacterToAdd(widget.universeId, searchController.text, widget.familyTreeName);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Choisis ton personnage à ajouter"),
-      content: SizedBox(
-        width: double.maxFinite, // Utilisation de la largeur maximale disponible
-        height: 300, // Taille prédéfinie
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            TextField(
-              controller: searchController,
-              decoration: const InputDecoration(labelText: "Recherche"),
-                onChanged: (value) {
-                setState(() {
-                  searchResults = fetchSearchCharacterToAdd(widget.universeId, value, widget.familyTreeName);
-                  //print(searchResults);
-                });
-              },
-            ),
-            Expanded(
-              child: FutureBuilder<List<dynamic>>(
-                future: searchResults,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (snapshot.hasData) {
-                    final List<dynamic> characters = snapshot.data ?? [];
-                    return ListView.builder(
-                      itemCount: characters.length,
-                      itemBuilder: (context, index) {
-                        dynamic character = characters[index];
-                        return ListTile(
-                          title: Text(character['name']),
-                          onTap: () async {
-                            await addCharacterTree(character['name'], widget.familyTreeName);
-                            Navigator.of(context).pop();
-                          },
-                        );
-                      },
-                    );
-                  } else {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Annuler'),
-        ),
-      ],
     );
   }
 }

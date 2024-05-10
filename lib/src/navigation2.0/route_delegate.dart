@@ -7,7 +7,7 @@ import 'package:frontend/src/screens/places.dart';
 import 'package:frontend/src/screens/universe_home_page.dart';
 import 'package:frontend/src/screens/unknown_screen.dart';
 import 'package:frontend/src/screens/character_details.dart';
-import 'package:frontend/src/screens/family_tree_details.dart';
+import 'package:frontend/src/screens/family_tree_details/family_tree_details.dart';
 //import '../model/character.dart';
 import 'route_config.dart';
 
