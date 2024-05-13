@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../navigation2.0/route_delegate.dart';
 import '../../navigation2.0/route_config.dart';
 import 'add_character_dialog.dart';
-import 'family_tree_painter.dart';
+import 'family_tree_painter2.dart';
 import '../../model/character_node.dart';
 import '../../requestAPI/family_tree.dart';
 
