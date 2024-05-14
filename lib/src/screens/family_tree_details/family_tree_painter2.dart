@@ -27,7 +27,8 @@ class FamilyTreePainter extends CustomPainter {
     final Map<CharacterNode, Offset> nodePositions = {};
 
     // Init position first character
-    double startX = size.width / 2;
+    //double startX = size.width / 2;
+    double startX = -250;
     double startY = -250;
 
     const double levelSpacing = 250.0; // vertical space
@@ -64,7 +65,18 @@ class FamilyTreePainter extends CustomPainter {
           startChildX = nextXPosition + columnSpacing;
         }
       }
+
+
+      // position relationship
+      if (node.married.isNotEmpty) {
+        final CharacterNode spouse = characters.firstWhere((c) => c.name == node.married[0]);
+        if (!nodePositions.containsKey(spouse)) {
+          final double spouseX = x + (columnSpacing*2);
+          positionNodes(spouse, spouseX, y);
+        }
+      }
     }
+
 
     // Positionner le premier personnage (racine de l'arbre)
     startY = calculateY(characters.first, levelSpacing, startY);
@@ -82,13 +94,17 @@ class FamilyTreePainter extends CustomPainter {
       }).toList();
       CharacterNode parent = parentsNullable.first!;
 
-      List<CharacterNode?> childrenNullable = node.parents.map((childName) {
+      List<CharacterNode?> childrenNullable = parent.children.map((childName) {
         return characters.firstWhereOrNull((character) => character.name == childName);
       }).toList();
-      CharacterNode firstChild = childrenNullable.first!;
+      List<CharacterNode> childrenOneParent = childrenNullable.where((child) => child != null && child.parents.length == 1).cast<CharacterNode>().toList();
+      CharacterNode firstChild = childrenOneParent.first;
+    
+      double firstChildXPosition = nodePositions[firstChild]!.dx;
+      double lastChildPosition = nodePositions[childrenOneParent[childrenOneParent.length - 1]]!.dx;
+      double totalChildrenX = lastChildPosition - firstChildXPosition;
 
-      double totalChildrenX = columnSpacing * (parent.children.length-1);
-      double deltaX  = nodePositions[firstChild]!.dx + (totalChildrenX / 2);
+      double deltaX  = firstChildXPosition + (totalChildrenX / 2);
       updateNodeAndDescendantsXPositions(parent, deltaX, nodePositions, columnSpacing);
     }
   }
@@ -99,8 +115,16 @@ class FamilyTreePainter extends CustomPainter {
 
   double getNextAvailableXPosition(double initialX, double y, Map<CharacterNode, Offset> nodePositions, double columnSpacing) {
     double newX = initialX;
-    while (nodePositions.values.any((position) => (position.dx == newX && position.dy == y))) {
+
+    double minX = initialX - 100 ;
+    double maxX = initialX;
+    /*while (nodePositions.values.any((position) => (position.dx == newX && position.dy == y))) {
       newX += columnSpacing; 
+    }*/
+    while (nodePositions.values.any((position) => (((position.dx >= minX) && (position.dx <= maxX)) && (position.dy == y)))) {
+      newX += columnSpacing; 
+      minX += columnSpacing;
+      maxX += columnSpacing;
     }
     return newX;
   }
