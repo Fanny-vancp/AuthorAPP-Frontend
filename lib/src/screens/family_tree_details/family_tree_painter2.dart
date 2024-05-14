@@ -175,6 +175,21 @@ class FamilyTreePainter extends CustomPainter {
           );
         }
       }
+
+      // relation between two nodes
+      if (character.married.isNotEmpty) {
+        final CharacterNode spouse = characters.firstWhere((c) => c.name == character.married[0]);
+        final characterPosition = nodePositions[character]!;
+        final spousePosition = nodePositions[spouse]!;
+
+        relationLines.add(
+          RelationLine(
+            start: Offset(characterPosition.dx, characterPosition.dy),
+            end: Offset(spousePosition.dx, spousePosition.dy),
+            label: 'Marié',
+          ),
+        );
+      }
     }
 
     return relationLines;
